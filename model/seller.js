@@ -38,7 +38,7 @@ const sellerSchema = new mongoose.Schema({
     storeAdress : {
         street : {type : String , required : true},
         city : {type : String , required : true},
-        stete : {type : String , required : true},
+        state : {type : String , required : true},
         postalCode : {type : String , required : true},
         country : {type : String , default : "India"}
     },
@@ -86,5 +86,5 @@ const sellerSchema = new mongoose.Schema({
     }
 }, {timestamps : true});
 
-const seller = mongoose.mondel("sellers", sellerSchema);
+const seller = mongoose.model("sellers", sellerSchema);
 module.exports = seller;
