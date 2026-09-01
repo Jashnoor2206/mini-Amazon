@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Address</title>
+    <!-- <link rel="stylesheet" href="/address.css"> -->
+</head>
+<body>
+
+    <div class="address-container">
+        <h1>Add Your Address</h1>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <p class="error-msg"><%= error %></p>
+        <% } %>
+
+        <form action="/user/addressPage" method="POST">
+            <label for="label">Address Label</label>
+            <input type="text" id="label" name="label" placeholder="Home, Work, etc." value="Home">
+
+            <label for="street">Street</label>
+            <input type="text" id="street" name="street" placeholder="Street address" required>
+
+            <label for="city">City</label>
+            <input type="text" id="city" name="city" placeholder="City" required>
+
+            <label for="state">State</label>
+            <input type="text" id="state" name="state" placeholder="State" required>
+
+            <label for="postalCode">Postal Code</label>
+            <input type="text" id="postalCode" name="postalCode" placeholder="Postal code" required>
+
+            <label for="country">Country</label>
+            <input type="text" id="country" name="country" placeholder="Country" value="India">
+
+            <button type="submit">Save Address</button>
+        </form>
+    </div>
+
+</body>
+</html>

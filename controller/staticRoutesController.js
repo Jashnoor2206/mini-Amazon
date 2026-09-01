@@ -1,7 +1,16 @@
-const express = require('express');
 
 function homePage(req, res){
     res.render('homePage');
 }
+function signupPage(req, res){
+    res.render('signup');
+}
+function addressPage(req, res){
+    res.render('address');
+}
 
-module.exports = homePage;
+module.exports = {
+    homePage,
+    signupPage,
+    addressPage
+}

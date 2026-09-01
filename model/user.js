@@ -29,10 +29,10 @@ const  userSchema = new mongoose.Schema({
     addresses: [
         {
           label: { type: String, default: "Home" }, // "Home", "Work", etc.
-          street: String,
-          city: String,
-          state: String,
-          postalCode: String,
+          street: { type: String, default: " "},
+          city: { type: String, default: " "},
+          state: { type: String, default: " "},
+          postalCode: { type: String, default: " "},
           country: { type: String, default: "India" },
           isDefault: { type: Boolean, default: false }
         }

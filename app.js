@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const staticRoutes = require('./routes/staticRoutes');
+const dynamicRouting = require('./routes/dynamicRoutes');
 const connectToMongoDB = require('./connect');
 connectToMongoDB(app);
 
@@ -10,3 +11,4 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use('/amazon-clone', staticRoutes);
+app.use('/user', dynamicRouting);
