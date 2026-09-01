@@ -15,7 +15,7 @@
             <p class="error-msg"><%= error %></p>
         <% } %>
 
-        <form action="/user/addressPage" method="POST">
+        <form action="/user/addressPage/<%= userId% >" method="POST">
             <label for="label">Address Label</label>
             <input type="text" id="label" name="label" placeholder="Home, Work, etc." value="Home">
 

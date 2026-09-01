@@ -6,11 +6,16 @@ function signupPage(req, res){
     res.render('signup');
 }
 function addressPage(req, res){
-    res.render('address');
+    const {userId} = req.params;
+    res.render('address', {userId});
+}
+function loginPage(req, res){
+    res.render('login');
 }
 
 module.exports = {
     homePage,
     signupPage,
-    addressPage
+    addressPage,
+    loginPage
 }
