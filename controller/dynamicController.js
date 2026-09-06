@@ -3,8 +3,9 @@ const {setUser} = require('../services/auth');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
+    let newUser;
     try{
-        const newUser = await user.create({
+        newUser = await user.create({
             name: name,
             email: email,
             password: password,

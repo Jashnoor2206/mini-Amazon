@@ -1,4 +1,5 @@
 const express = require('express');
+const {restrictToLoggedInUser} = require('../middleware/auth');
 const {
     homePage,
     signupPage,
@@ -7,7 +8,7 @@ const {
 } = require('../controller/staticRoutesController')
 const router = express.Router();
 
-router.get('/', homePage);
+router.get('/',restrictToLoggedInUser, homePage);
 router.get('/signup', signupPage);
 router.get('/enterAddress/:userId', addressPage);
 router.get('/login', loginPage);
