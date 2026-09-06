@@ -14,7 +14,7 @@ async function createUser(req, res){
         return res.render('error');
     }
 
-    return res.redirect('/user/enterAddress/${newUser._id}');
+    return res.redirect('/amazon-clone/enterAddress/${newUser._id}');
 }
 
 async function enterAddress(req, res){
