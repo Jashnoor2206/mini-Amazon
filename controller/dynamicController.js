@@ -1,9 +1,10 @@
 const user = require('../model/user');
+const {setUser} = require('../services/auth');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
     try{
-        newUser = await user.create({
+        const newUser = await user.create({
             name: name,
             email: email,
             password: password,
@@ -13,8 +14,9 @@ async function createUser(req, res){
         console.log(err);
         return res.render('error');
     }
-
-    return res.redirect('/amazon-clone/enterAddress/${newUser._id}');
+    const token = setUser(newUser);
+    res.cookie("uuid", token);
+    return res.redirect(`/amazon-clone/enterAddress/${newUser._id}`);
 }
 
 async function enterAddress(req, res){
@@ -27,7 +29,7 @@ async function enterAddress(req, res){
         return res.redirect('/amazon-clone');
     }catch(err){
         console.log(err);
-        return res.render('addressPage', { error: "Something went wrong, please try again" });
+        return res.render('address', { error: "Something went wrong, please try again" });
     }
 }
 
