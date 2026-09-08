@@ -6,6 +6,17 @@
     <title>HomePage</title>
 </head>
 <body>
-    <h2>This is the home page </h2>
+    <h2>Shop </h2>
+    <div class="product-grid">
+        <% listings.forEach(listing => { %>
+          <div class="product-card">
+            <img src="<%= listing.product.images[0] %>" alt="<%= listing.product.name %>">
+            <h3><%= listing.product.name %></h3>
+            <p class="price">₹<%= listing.price %></p>
+            <p class="seller">Sold by <%= listing.seller.storeName %></p>
+            <p class="stock"><%= listing.stock > 0 ? "In stock" : "Out of stock" %></p>
+          </div>
+        <% }) %>
+      </div>
 </body>
 </html>
