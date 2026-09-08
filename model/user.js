@@ -43,7 +43,7 @@ const  userSchema = new mongoose.Schema({
         {
           listing: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Listing"
+            ref: "listing"
           },
           quantity: {
             type: Number,
@@ -57,7 +57,7 @@ const  userSchema = new mongoose.Schema({
     wishlist: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Product"
+          ref: "items"
         }
     ],
 

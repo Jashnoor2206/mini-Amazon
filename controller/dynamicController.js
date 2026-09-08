@@ -42,6 +42,8 @@ async function handleLogin(req, res){
             error: "Invalid Username or Password"
         });
     }
+    const token = setUser(existingUser);
+    res.cookie("uuid", token);
     return res.redirect('/amazon-clone');
 }
 
