@@ -38,6 +38,17 @@ async function seed(){
           status: "active",
           isVerified: true,
           bankDetails: { accountHolderName: "Priya Sharma", bankName: "HDFC", accountNumber: "9876543210", ifscCode: "HDFC0005678" }
+        },
+        {
+          name: "Pankaj Kumar",
+          email: "pankaj2003@gmail.com",
+          password: "pankajandwife",
+          contact: "9822365521",
+          storeName: "Sharma Cloth House",
+          storeAdress: { street: "Blue Street", city: "Delhi", state: "New Delhi", postalCode: "130010"},
+          status: "active",
+          isVerified: true,
+          bankDetails: { accountHolderName: "Priya Sharma", bankName: "HDFC", accountNumber: "9876543210", ifscCode: "HDFC0005678" }
         }
     ]);
     
@@ -66,6 +77,14 @@ async function seed(){
           subCategory: "Audio",
           brand: "Boat",
           images: ["https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTpzDkle_QcXRbe4rwuCBSUhTQdTX25508CU2DyDXgy5Q&s"]
+        },
+        {
+          name: "Blue Tshirt",
+          description: "100 % cotton navy blue tshirt , M Size",
+          category: "Cloth",
+          subCategory: "Upper Wear",
+          brand: "Wrogn",
+          images: ["https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRwcBiFYcL3_ZqbVGgW9W8jE3iOuWSArm4zreD-ZagBag&s=10"]
         }
     ]);
 
@@ -73,7 +92,8 @@ async function seed(){
         { product: products[0]._id, seller: sellers[0]._id, price: 79999, stock: 10, condition: "new" },
         { product: products[0]._id, seller: sellers[1]._id, price: 78499, stock: 4,  condition: "new" }, // same product, different seller/price
         { product: products[1]._id, seller: sellers[1]._id, price: 24999, stock: 15, condition: "new" },
-        { product: products[2]._id, seller: sellers[0]._id, price: 1299,  stock: 50, condition: "new" }
+        { product: products[2]._id, seller: sellers[0]._id, price: 1299,  stock: 50, condition: "new" },
+        { product: products[3]._id, seller: sellers[2]._id, price: 799, stock: 100, condition: "new"}
     ]);
 
     console.log("Seed complete ✅");

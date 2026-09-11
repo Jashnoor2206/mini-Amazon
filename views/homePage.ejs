@@ -1,22 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HomePage</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Node | Shop Online</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
-    <h2>Shop </h2>
-    <div class="product-grid">
-        <% listings.forEach(listing => { %>
-          <div class="product-card">
-            <img src="<%= listing.product.images[0] %>" alt="<%= listing.product.name %>">
-            <h3><%= listing.product.name %></h3>
-            <p class="price">₹<%= listing.price %></p>
-            <p class="seller">Sold by <%= listing.seller.storeName %></p>
-            <p class="stock"><%= listing.stock > 0 ? "In stock" : "Out of stock" %></p>
-          </div>
-        <% }) %>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-inner">
+
+      <a href="/" class="logo">Node</a>
+
+      <div class="deliver-to">
+        <span class="deliver-label">Deliver to</span>
+        <span class="deliver-loc">📍 <%= user && user.address ? user.address.city : "Add address" %></span>
       </div>
+
+      <form class="search-bar" action="/search" method="GET">
+        <select name="category" class="search-category">
+          <option value="all">All</option>
+          <option value="electronics">Electronics</option>
+          <option value="fashion">Fashion</option>
+          <option value="home">Home & Kitchen</option>
+          <option value="beauty">Beauty</option>
+          <option value="grocery">Grocery</option>
+        </select>
+        <input type="text" name="q" placeholder="Search products, brands and more">
+        <button type="submit">🔍</button>
+      </form>
+
+      <nav class="topbar-actions">
+        <a href="/account" class="action-item">
+          <span class="action-label">Hello, <%= user ? user.name : "sign in" %></span>
+          <span class="action-title">Account</span>
+        </a>
+        <a href="/orders" class="action-item">
+          <span class="action-label">Returns</span>
+          <span class="action-title">& Orders</span>
+        </a>
+        <a href="/wishlist" class="action-item">
+          <span class="action-label">Your</span>
+          <span class="action-title">Wishlist ♡</span>
+        </a>
+        <a href="/cart" class="action-item cart">
+          <span class="cart-icon">🛒<span class="cart-count"><%= user && user.cart ? user.cart.length : 0 %></span></span>
+          <span class="action-title">Cart</span>
+        </a>
+      </nav>
+
+    </div>
+
+    <!-- Category strip -->
+    <div class="category-strip">
+      <button class="cat-menu">☰ All Categories</button>
+      <a href="/category/electronics">Electronics</a>
+      <a href="/category/fashion">Fashion</a>
+      <a href="/category/home-kitchen">Home & Kitchen</a>
+      <a href="/category/beauty">Beauty</a>
+      <a href="/category/grocery">Grocery</a>
+      <a href="/deals">Today's Deals</a>
+      <a href="/sell">Sell on Node</a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1>Everything you need, delivered.</h1>
+    <p>Shop top brands across fashion, electronics, home & more.</p>
+  </section>
+
+  <!-- Product grid -->
+  <main class="shop-section">
+    <h2>Just for you</h2>
+    <div class="product-grid">
+      <% listings.forEach(listing => { %>
+        <div class="product-card">
+          <div class="wishlist-btn" data-listing-id="<%= listing._id %>">♡</div>
+          <img src="<%= listing.product.images[0] %>" alt="<%= listing.product.name %>">
+          <h3><%= listing.product.name %></h3>
+          <p class="price">₹<%= listing.price %></p>
+          <p class="seller">Sold by <%= listing.seller.storeName %></p>
+          <p class="stock"><%= listing.stock > 0 ? "In stock" : "Out of stock" %></p>
+          <button class="add-to-cart" data-listing-id="<%= listing._id %>">Add to Cart</button>
+        </div>
+      <% }) %>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <p>&copy; <%= new Date().getFullYear() %> Node. All rights reserved.</p>
+  </footer>
+
 </body>
 </html>

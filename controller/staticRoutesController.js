@@ -1,4 +1,6 @@
 const Listing = require('../model/listing');
+const User = require('../model/user');
+const {getUser} = require('../services/auth');
 require('../model/product');
 require('../model/seller');
 
@@ -8,8 +10,19 @@ async function homePage(req, res){
             .populate("product")
             .populate("seller", "storeName rating")
             .limit(20);
+
+        let userPayload = null;
+        try{
+            userPayload = getUser(req.cookies);
+        }catch(err){
+            userPayload = null;
+        }
         
-        res.render('homePage', {listings});
+        let user = null;
+        if(userPayload){
+            user = await User.find(userPayload._id);
+        }
+        res.render('homePage', {listings, user: user});
     }catch(err){
         console.log(err);
         res.status(500).send('Something wrong happened while loading homePage')
