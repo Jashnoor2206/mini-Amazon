@@ -13,15 +13,19 @@ async function homePage(req, res){
 
         let userPayload = null;
         try{
-            userPayload = getUser(req.cookies);
+            userPayload = getUser(req.cookies.uuid);
+            console.log("Payload Decoded");
         }catch(err){
             userPayload = null;
+            console.log("Failed to decode");
         }
         
         let user = null;
         if(userPayload){
-            user = await User.find(userPayload._id);
+            user = await User.findById(userPayload._id);
+            console.log("User found in database");
         }
+        console.log("Going to render homepage");
         res.render('homePage', {listings, user: user});
     }catch(err){
         console.log(err);

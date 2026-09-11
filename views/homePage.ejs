@@ -18,7 +18,7 @@
 
       <div class="deliver-to">
         <span class="deliver-label">Deliver to</span>
-        <span class="deliver-loc">📍 <%= user && user.address ? user.address.city : "Add address" %></span>
+        <span class="deliver-loc">📍 <%= user && user.addresses && user.addresses.length ? user.addresses[0].city : "Add address" %></span>
       </div>
 
       <form class="search-bar" action="/search" method="GET">
