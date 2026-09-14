@@ -52,8 +52,9 @@ async function handleLogin(req, res){
 
 async function profilePage(req, res){
     let userPayload = null;
+    let user = null;
     try{
-        userPayload = getUser(res.cookies.uuid);
+        userPayload = getUser(req.cookies.uuid);
     }catch(err){
         userPayload = null;
     }

@@ -4,6 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Profile - Node</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/profile.css">
 </head>
 <body>
@@ -57,7 +59,7 @@
     <!-- Right: Quick actions -->
     <div class="profile-actions">
       <a href="/orders" class="action-item">
-        <span class="action-icon">📦</span>
+        <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Your Orders</span>
           <span class="action-sub">Track, return, or buy again</span>
@@ -66,7 +68,7 @@
       </a>
 
       <a href="/cart" class="action-item">
-        <span class="action-icon">🛒</span>
+        <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Cart</span>
           <span class="action-sub">View items added to cart</span>
@@ -75,7 +77,7 @@
       </a>
 
       <a href="/wishlist" class="action-item">
-        <span class="action-icon">♡</span>
+        <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Wishlist</span>
           <span class="action-sub">Items you've saved</span>
@@ -84,7 +86,7 @@
       </a>
 
       <a href="/address" class="action-item">
-        <span class="action-icon">📍</span>
+        <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Manage Addresses</span>
           <span class="action-sub">Add or edit delivery addresses</span>
@@ -94,7 +96,7 @@
 
       <% if (user.role === "seller") { %>
       <a href="/seller/dashboard" class="action-item">
-        <span class="action-icon">🏬</span>
+        <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Seller Dashboard</span>
           <span class="action-sub">Manage your listings</span>
@@ -104,7 +106,7 @@
       <% } %>
 
       <a href="/auth/switch-account" class="action-item">
-        <span class="action-icon">🔄</span>
+        <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Switch Account</span>
           <span class="action-sub">Sign in with a different account</span>
@@ -114,7 +116,7 @@
 
       <form action="/auth/logout" method="POST" class="logout-form">
         <button type="submit" class="action-item logout-item">
-          <span class="action-icon">🚪</span>
+          <span class="action-icon"></span>
           <div class="action-text">
             <span class="action-title">Logout</span>
             <span class="action-sub">Sign out of this device</span>
