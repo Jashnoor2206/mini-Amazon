@@ -1,5 +1,8 @@
 const user = require('../model/user');
 const {setUser} = require('../services/auth');
+const Listing = require('../model/listing');
+const {getUser} = require('../services/auth');
+const User = require('../model/user');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
@@ -47,8 +50,48 @@ async function handleLogin(req, res){
     return res.redirect('/amazon-clone');
 }
 
+async function profilePage(req, res){
+    let userPayload = null;
+    try{
+        userPayload = getUser(res.cookies.uuid);
+    }catch(err){
+        userPayload = null;
+    }
+    if(userPayload){
+        user = await User.findById(userPayload._id);
+    }
+    res.render('profile', {user : user});
+}
+
+async function homePage(req, res){
+    try{
+        const listings = await Listing.find({status : "active"})
+            .populate("product")
+            .populate("seller", "storeName rating")
+            .limit(20);
+
+        let userPayload = null;
+        try{
+            userPayload = getUser(req.cookies.uuid);
+        }catch(err){
+            userPayload = null;
+        }
+        
+        let user = null;
+        if(userPayload){
+            user = await User.findById(userPayload._id);
+        }
+        res.render('homePage', {listings, user: user});
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Something wrong happened while loading homePage')
+    }
+}
+
 module.exports = {
     createUser,
     enterAddress,
-    handleLogin
+    handleLogin,
+    homePage,
+    profilePage
 }

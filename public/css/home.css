@@ -4,6 +4,16 @@
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
   }
+
+  .deliver-to {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .deliver-to:visited {
+    color: inherit;
+  }
   
   body {
     background: #f4f7f5;

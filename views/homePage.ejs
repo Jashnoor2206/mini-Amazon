@@ -14,12 +14,14 @@
   <header class="topbar">
     <div class="topbar-inner">
 
-      <a href="/" class="logo">Node</a>
+      <a href="/amazon-clone" class="logo">Node</a>
 
-      <div class="deliver-to">
-        <span class="deliver-label">Deliver to</span>
-        <span class="deliver-loc">📍 <%= user && user.addresses && user.addresses.length ? user.addresses[0].city : "Add address" %></span>
-      </div>
+      <a href="<%= user ? '/account' : '/amazon-clone/login' %>" class="deliver-to">
+        <div class="deliver-to">
+          <span class="deliver-label">Deliver to</span>
+          <span class="deliver-loc">📍 <%= user && user.addresses && user.addresses.length ? user.addresses[0].city : "Add address" %></span>
+        </div>
+      </a>
 
       <form class="search-bar" action="/search" method="GET">
         <select name="category" class="search-category">
