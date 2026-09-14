@@ -16,12 +16,19 @@
 
       <a href="/amazon-clone" class="logo">Node</a>
 
-      <a href="<%= user ? '/account' : '/amazon-clone/login' %>" class="deliver-to">
+      <% if(user) { %>
         <div class="deliver-to">
           <span class="deliver-label">Deliver to</span>
-          <span class="deliver-loc">📍 <%= user && user.addresses && user.addresses.length ? user.addresses[0].city : "Add address" %></span>
+          <span class="deliver-loc">📍 <%= user.addresses[0].city %></span>
         </div>
-      </a>
+      <% }else{ %>
+        <a href="/amazon-clone/login" class="deliver-to">
+          <div class="deliver-to">
+            <span class="deliver-label">Deliver to</span>
+            <span class="deliver-loc">📍Add address</span>
+          </div>
+        </a>
+      <% } %>
 
       <form class="search-bar" action="/search" method="GET">
         <select name="category" class="search-category">
@@ -37,7 +44,7 @@
       </form>
 
       <nav class="topbar-actions">
-        <a href="/account" class="action-item">
+        <a href="<%= user ? '/amazon-clone/profile' : 'amazon-clone/login' %>" class="action-item">
           <span class="action-label">Hello, <%= user ? user.name : "sign in" %></span>
           <span class="action-title">Account</span>
         </a>

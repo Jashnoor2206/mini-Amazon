@@ -4,37 +4,6 @@ const {getUser} = require('../services/auth');
 require('../model/product');
 require('../model/seller');
 
-async function homePage(req, res){
-    try{
-        const listings = await Listing.find({status : "active"})
-            .populate("product")
-            .populate("seller", "storeName rating")
-            .limit(20);
-
-        let userPayload = null;
-        try{
-            userPayload = getUser(req.cookies.uuid);
-            console.log("Payload Decoded");
-        }catch(err){
-            userPayload = null;
-            console.log("Failed to decode");
-        }
-        
-        let user = null;
-        if(userPayload){
-            user = await User.findById(userPayload._id);
-            console.log("User found in database");
-        }
-        console.log("Going to render homepage");
-        res.render('homePage', {listings, user: user});
-    }catch(err){
-        console.log(err);
-        res.status(500).send('Something wrong happened while loading homePage')
-    }
-}
-
-// Now since the listing only stores the reference id of the product in the form of string , so to fetch the actual product in items collection you need to write .populate , same logic for seller. From seller we fetch the storeName and rating , limit(20) caps the query to return only atmax 20 documents so that it does not causes delay in the system while fetching. We will pair it with .skip later and move to page 1, 2 etc
-
 function signupPage(req, res){
     res.render('signup');
 }
@@ -47,7 +16,6 @@ function loginPage(req, res){
 }
 
 module.exports = {
-    homePage,
     signupPage,
     addressPage,
     loginPage

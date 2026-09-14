@@ -88,6 +88,8 @@ async function homePage(req, res){
     }
 }
 
+// Now since the listing only stores the reference id of the product in the form of string , so to fetch the actual product in items collection you need to write .populate , same logic for seller. From seller we fetch the storeName and rating , limit(20) caps the query to return only atmax 20 documents so that it does not causes delay in the system while fetching. We will pair it with .skip later and move to page 1, 2 etc
+
 module.exports = {
     createUser,
     enterAddress,
