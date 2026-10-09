@@ -5,6 +5,7 @@ const dynamicRouting = require('./routes/dynamicRoutes');
 const connectToMongoDB = require('./connect');
 const cookieParser = require('cookie-parser');
 const path = require('path');
+app.use('/client-assets', express.static(path.join(__dirname, 'client/dist')));
 connectToMongoDB(app);
 
 

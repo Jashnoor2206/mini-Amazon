@@ -1,11 +1,13 @@
 const Listing = require('../model/listing');
 const User = require('../model/user');
 const {getUser} = require('../services/auth');
+const path = require('path');
 require('../model/product');
 require('../model/seller');
 
+
 function signupPage(req, res){
-    res.render('signup');
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 }
 function addressPage(req, res){
     const {userId} = req.params;
