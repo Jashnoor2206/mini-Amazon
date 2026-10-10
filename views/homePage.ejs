@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+v<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Node | Shop Online</title>
-  <link rel="stylesheet" href="/css/theme.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
@@ -17,22 +17,34 @@
 
       <a href="/amazon-clone" class="logo">Node</a>
 
-      <% if(user) { %>
+      <% if (user && user.addresses && user.addresses.length) { %>
         <div class="deliver-to">
-          <span class="deliver-label">Deliver to</span>
-          <span class="deliver-loc">📍 <%= user.addresses[0].city %></span>
-        </div>
-      <% }else{ %>
-        <a href="/amazon-clone/login" class="deliver-to">
-          <div class="deliver-to">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="deliver-text">
             <span class="deliver-label">Deliver to</span>
-            <span class="deliver-loc">📍Add address</span>
+            <span class="deliver-loc"><%= user.addresses[0].city %></span>
+          </div>
+        </div>
+      <% } else if (user) { %>
+        <a href="/amazon-clone/enterAddress/<%= user._id %>" class="deliver-to">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="deliver-text">
+            <span class="deliver-label">Deliver to</span>
+            <span class="deliver-loc">Add address</span>
+          </div>
+        </a>
+      <% } else { %>
+        <a href="/amazon-clone/login" class="deliver-to">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+          <div class="deliver-text">
+            <span class="deliver-label">Deliver to</span>
+            <span class="deliver-loc">Add address</span>
           </div>
         </a>
       <% } %>
 
       <form class="search-bar" action="/search" method="GET">
-        <select name="category" class="search-category">
+        <select name="category" class="search-category" aria-label="Search category">
           <option value="all">All</option>
           <option value="electronics">Electronics</option>
           <option value="fashion">Fashion</option>
@@ -40,12 +52,14 @@
           <option value="beauty">Beauty</option>
           <option value="grocery">Grocery</option>
         </select>
-        <input type="text" name="q" placeholder="Search products, brands and more">
-        <button type="submit">🔍</button>
+        <input type="text" name="q" placeholder="Search products, brands and more" aria-label="Search products">
+        <button type="submit" aria-label="Search">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        </button>
       </form>
 
       <nav class="topbar-actions">
-        <a href="<%= user ? '/amazon-clone/profile' : 'amazon-clone/login' %>" class="action-item">
+        <a href="<%= user ? '/amazon-clone/profile' : '/amazon-clone/login' %>" class="action-item">
           <span class="action-label">Hello, <%= user ? user.name : "sign in" %></span>
           <span class="action-title">Account</span>
         </a>
@@ -58,7 +72,10 @@
           <span class="action-title">Wishlist</span>
         </a>
         <a href="/cart" class="action-item cart">
-          <span class="cart-icon">🛒<span class="cart-count"><%= user && user.cart ? user.cart.length : 0 %></span></span>
+          <span class="cart-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            <span class="cart-count"><%= user && user.cart ? user.cart.length : 0 %></span>
+          </span>
           <span class="action-title">Cart</span>
         </a>
       </nav>
@@ -66,8 +83,11 @@
     </div>
 
     <!-- Category strip -->
-    <div class="category-strip">
-      <button class="cat-menu">☰ All Categories</button>
+    <nav class="category-strip" aria-label="Categories">
+      <button type="button" class="cat-menu">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        All Categories
+      </button>
       <a href="/category/electronics">Electronics</a>
       <a href="/category/fashion">Fashion</a>
       <a href="/category/home-kitchen">Home & Kitchen</a>
@@ -75,7 +95,7 @@
       <a href="/category/grocery">Grocery</a>
       <a href="/deals">Today's Deals</a>
       <a href="/sell">Sell on Node</a>
-    </div>
+    </nav>
   </header>
 
   <!-- Hero -->
@@ -88,16 +108,27 @@
   <main class="shop-section">
     <h2>Just for you</h2>
     <div class="product-grid">
-      <% listings.forEach(listing => { %>
-        <div class="product-card">
-          <div class="wishlist-btn" data-listing-id="<%= listing._id %>">♡</div>
-          <img src="<%= listing.product.images[0] %>" alt="<%= listing.product.name %>">
+      <% if (!listings || !listings.length) { %>
+        <p class="empty-state">No products to show yet.</p>
+      <% } %>
+      <% listings.forEach((listing, i) => { %>
+        <% if (!listing.product) return; %>
+        <% const image = listing.product.images && listing.product.images[0]; %>
+        <article class="product-card" style="--i: <%= i %>">
+          <div class="product-media">
+            <button type="button" class="wishlist-btn" data-listing-id="<%= listing._id %>" aria-label="Add to wishlist">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+            </button>
+            <% if (image) { %>
+              <img src="<%= image %>" alt="<%= listing.product.name %>">
+            <% } %>
+          </div>
           <h3><%= listing.product.name %></h3>
-          <p class="price">₹<%= listing.price %></p>
-          <p class="seller">Sold by <%= listing.seller.storeName %></p>
-          <p class="stock"><%= listing.stock > 0 ? "In stock" : "Out of stock" %></p>
-          <button class="add-to-cart" data-listing-id="<%= listing._id %>">Add to Cart</button>
-        </div>
+          <p class="price">₹<%= Number(listing.price).toLocaleString('en-IN') %></p>
+          <p class="seller">Sold by <%= listing.seller ? listing.seller.storeName : "Node seller" %></p>
+          <p class="stock <%= listing.stock > 0 ? '' : 'out' %>"><%= listing.stock > 0 ? "In stock" : "Out of stock" %></p>
+          <button type="button" class="add-to-cart" data-listing-id="<%= listing._id %>" <%= listing.stock > 0 ? '' : 'disabled' %>>Add to Cart</button>
+        </article>
       <% }) %>
     </div>
   </main>
