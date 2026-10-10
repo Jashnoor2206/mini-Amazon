@@ -7,8 +7,15 @@ export default defineConfig({
   base: "/client-assets/",
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    alias: { "@": path.resolve(__dirname, "./src") },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: "assets/app.js",
+        chunkFileNames: "assets/[name].js",
+        assetFileNames: "assets/app[extname]",
+      },
     },
   },
 });

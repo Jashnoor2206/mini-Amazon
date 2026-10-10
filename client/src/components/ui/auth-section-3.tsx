@@ -5,71 +5,149 @@ import { FlutedGlass } from "@paper-design/shaders-react";
 import { Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 
-export default function AuthSectionThree() {
+type Mode = "signup" | "login" | "address";
+
+const quotes: Record<Mode, string> = {
+  signup: "All roads lead to Node, your one stop for everything",
+  login: "Welcome back. Your cart and wishlist are right where you left them.",
+  address: "Tell us where to deliver and we will take it from there.",
+};
+
+export default function AuthSection({
+  mode,
+  error,
+  userId,
+}: {
+  mode: Mode;
+  error?: string;
+  userId?: string;
+}) {
+  const isLogin = mode === "login";
+  const isAddress = mode === "address";
+
+  const heading = isAddress
+    ? "Add your address"
+    : isLogin
+      ? "Welcome back"
+      : "Create an account";
+
+  const action = isAddress
+    ? `/user/addressPage/${userId}`
+    : isLogin
+      ? "/user/login"
+      : "/user/createUser";
+
+  const buttonText = isAddress ? "Save address" : isLogin ? "Log in" : "Sign up";
+
   return (
-    <section className="min-h-screen bg-white p-3 text-black antialiased [font-synthesis:none] bg-[#050505] text-white">
+    <section className="min-h-screen bg-ink p-3 text-ink antialiased [font-synthesis:none]">
       <div className="grid min-h-[calc(100vh-1.5rem)] gap-6 lg:grid-cols-[0.94fr_1.06fr]">
-        {/* Left: signup form */}
-        <div className="flex min-h-[760px] items-center justify-center rounded-md border border-black/10 bg-white px-6 py-12 border-white/5 bg-[#0a0a0c] lg:min-h-0 lg:px-14 lg:py-20 xl:px-20">
+        {/* Left: form */}
+        <div className="flex min-h-[760px] items-center justify-center rounded-md border border-ink/10 bg-cream px-6 py-12 lg:min-h-0 lg:px-14 lg:py-20 xl:px-20">
           <div className="mx-auto w-full max-w-[460px]">
             <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">
-              Create an account
+              {heading}
             </h1>
 
-            <form
-              action="/user/createUser"
-              method="POST"
-              className="mt-8 space-y-4"
-            >
-              <InputField
-                label="Full name"
-                name="name"
-                placeholder="Enter your full name"
-              />
-              <InputField
-                label="Email"
-                name="email"
-                type="email"
-                placeholder="email@example.com"
-              />
-              <InputField
-                label="Contact number"
-                name="contact"
-                type="tel"
-                placeholder="10-digit mobile number"
-                pattern="[0-9]{10}"
-                maxLength={10}
-              />
-              <InputField
-                label="Password"
-                name="password"
-                type="password"
-                placeholder="Create a password"
-                minLength={6}
-              />
+            {error && (
+              <p className="mt-4 rounded-lg border border-red-700/30 bg-red-600/10 px-3.5 py-2.5 text-sm text-red-700">
+                {error}
+              </p>
+            )}
+
+            <form action={action} method="POST" className="mt-8 space-y-4">
+              {isAddress ? (
+                <>
+                  <InputField
+                    label="Address label"
+                    name="label"
+                    placeholder="Home, Work, etc."
+                    defaultValue="Home"
+                    required={false}
+                  />
+                  <InputField
+                    label="Street"
+                    name="street"
+                    placeholder="Street address"
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField label="City" name="city" placeholder="City" />
+                    <InputField label="State" name="state" placeholder="State" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <InputField
+                      label="Postal code"
+                      name="postalCode"
+                      placeholder="Postal code"
+                    />
+                    <InputField
+                      label="Country"
+                      name="country"
+                      placeholder="Country"
+                      defaultValue="India"
+                      required={false}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  {!isLogin && (
+                    <InputField
+                      label="Full name"
+                      name="name"
+                      placeholder="Enter your full name"
+                    />
+                  )}
+                  <InputField
+                    label="Email"
+                    name="email"
+                    type="email"
+                    placeholder="email@example.com"
+                  />
+                  {!isLogin && (
+                    <InputField
+                      label="Contact number"
+                      name="contact"
+                      type="tel"
+                      placeholder="10-digit mobile number"
+                      pattern="[0-9]{10}"
+                      maxLength={10}
+                    />
+                  )}
+                  <InputField
+                    label="Password"
+                    name="password"
+                    type="password"
+                    placeholder={isLogin ? "Enter your password" : "Create a password"}
+                    minLength={isLogin ? undefined : 6}
+                  />
+                </>
+              )}
 
               <button
                 type="submit"
-                className="mt-8 flex h-11 w-full items-center justify-center rounded-lg border border-black/40 bg-black text-sm font-medium text-white transition-colors hover:bg-black/85 border-white/40 bg-white text-black hover:bg-white/85"
+                className="mt-8 flex h-11 w-full cursor-pointer items-center justify-center rounded-lg border border-ink bg-ink text-sm font-medium text-cream transition-colors hover:bg-ink/85"
               >
-                Sign up
+                {buttonText}
               </button>
 
-              <p className="pt-2 text-center text-sm text-black/50 text-white/50">
-                Already have an account?{" "}
-                <a
-                  href="/amazon-clone/login"
-                  className="font-medium text-black underline underline-offset-2 text-white"
-                >
-                  Log in
-                </a>
-              </p>
+              {!isAddress && (
+                <p className="pt-2 text-center text-sm text-ink/60">
+                  {isLogin ? "Don't have an account? " : "Already have an account? "}
+                  <a
+                    href={isLogin ? "/amazon-clone/signup" : "/amazon-clone/login"}
+                    className="font-medium text-ink underline underline-offset-2"
+                  >
+                    {isLogin ? "Sign up" : "Log in"}
+                  </a>
+                </p>
+              )}
             </form>
           </div>
         </div>
 
-        {/* Right: shader + testimonial */}
-        <div className="relative flex min-h-[720px] flex-col overflow-hidden rounded-md bg-linear-to-b from-black to-white p-8 text-white to-[#050505] sm:p-12 lg:min-h-0 lg:p-16">
+        {/* Right: shader + quote */}
+        <div className="relative flex min-h-[720px] flex-col overflow-hidden rounded-md bg-linear-to-b from-ink to-sage p-8 text-cream sm:p-12 lg:min-h-0 lg:p-16">
           <div className="pointer-events-none absolute inset-0 z-0">
             <FlutedGlass
               size={0.89}
@@ -88,43 +166,22 @@ export default function AuthSectionThree() {
               grainMixer={0.1}
               grainOverlay={0.1}
               colorBack="#00000000"
-              colorHighlight="#FFFFFF"
-              colorShadow="#000000"
+              colorHighlight="#E8E6E1"
+              colorShadow="#232826"
               className="h-full w-full bg-transparent"
             />
           </div>
 
           <div className="relative z-10 h-full w-full">
             <div className="max-w-[460px] lg:pt-12">
-              <motion.div
-                initial={{ opacity: 0, y: 12, filter: "blur(6px)" }}
-                whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                viewport={{ once: true, margin: "-10%" }}
-                transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                className="flex items-center gap-4"
-              >
-                <img
-                  src="https://res.cloudinary.com/harshitproject/image/upload/v1746774430/member-five.png"
-                  alt="Charlotte"
-                  className="size-10 shrink-0 rounded-full border border-white/20 object-cover"
-                />
-                <div>
-                  <div className="font-semibold leading-tight">Charlotte</div>
-                  <div className="mt-0.5 text-xs text-white/60">
-                    Happy customer
-                  </div>
-                </div>
-              </motion.div>
-
               <motion.blockquote
                 initial={{ opacity: 0, y: 18, filter: "blur(8px)" }}
                 whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                 viewport={{ once: true, margin: "-10%" }}
                 transition={{ duration: 0.8, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
-                className="mt-7 text-2xl font-light leading-tight tracking-[-0.035em] text-white/90 sm:text-3xl lg:text-[34px]"
+                className="mt-7 text-2xl font-light leading-tight tracking-[-0.035em] text-cream sm:text-3xl lg:text-[34px]"
               >
-                “Everything I needed, delivered fast. Shopping on Node is a
-                joy.”
+                “{quotes[mode]}”
               </motion.blockquote>
             </div>
           </div>
@@ -150,27 +207,24 @@ function InputField({
 
   return (
     <div className="w-full space-y-1.5 text-left">
-      <label
-        htmlFor={name}
-        className="text-xs font-semibold text-black/60 text-white/60"
-      >
+      <label htmlFor={name} className="text-xs font-semibold text-ink/60">
         {label}
       </label>
-      <div className="relative flex h-11 items-center rounded-lg border border-black/15 bg-white px-3.5 border-white/10 bg-white/5">
+      <div className="relative flex h-11 items-center rounded-lg border border-ink/15 bg-white/50 px-3.5 focus-within:border-sage">
         <input
           id={name}
           name={name}
           required
           type={type === "password" ? (showPassword ? "text" : "password") : type}
           placeholder={placeholder}
-          className="w-full bg-transparent text-sm text-black outline-none placeholder:text-black/30 text-white placeholder:text-white/30"
+          className="w-full bg-transparent text-sm text-ink outline-none placeholder:text-ink/40"
           {...rest}
         />
         {type === "password" && (
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 cursor-pointer text-black/40 hover:text-black text-white/40 hover:text-white"
+            className="absolute right-3.5 cursor-pointer text-ink/50 hover:text-ink"
           >
             {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>

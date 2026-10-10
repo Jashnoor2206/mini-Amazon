@@ -1,45 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Address</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/theme.css">
-    <link rel="stylesheet" href="/css/auth.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Address</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/client-assets/assets/app.css">
 </head>
 <body>
-
-    <div class="address-container">
-        <h1>Add Your Address</h1>
-
-        <% if (typeof error !== 'undefined' && error) { %>
-            <p class="error-msg"><%= error %></p>
-        <% } %>
-
-        <form action="/user/addressPage/<%= userId %>" method="POST">
-            <label for="label">Address Label</label>
-            <input type="text" id="label" name="label" placeholder="Home, Work, etc." value="Home">
-
-            <label for="street">Street</label>
-            <input type="text" id="street" name="street" placeholder="Street address" required>
-
-            <label for="city">City</label>
-            <input type="text" id="city" name="city" placeholder="City" required>
-
-            <label for="state">State</label>
-            <input type="text" id="state" name="state" placeholder="State" required>
-
-            <label for="postalCode">Postal Code</label>
-            <input type="text" id="postalCode" name="postalCode" placeholder="Postal code" required>
-
-            <label for="country">Country</label>
-            <input type="text" id="country" name="country" placeholder="Country" value="India">
-
-            <button type="submit">Save Address</button>
-        </form>
-    </div>
-
+  <div id="root" data-mode="address"
+       data-user-id="<%= typeof userId !== 'undefined' ? userId : '' %>"
+       data-error="<%= typeof error !== 'undefined' ? error : '' %>"></div>
+  <script type="module" src="/client-assets/assets/app.js"></script>
 </body>
 </html>

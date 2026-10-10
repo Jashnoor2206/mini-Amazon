@@ -1,35 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Log In</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/theme.css">
-    <link rel="stylesheet" href="/css/auth.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Log In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/client-assets/assets/app.css">
 </head>
 <body>
-
-    <div class="login-container">
-        <h1>Log In</h1>
-
-        <% if (typeof error !== 'undefined' && error) { %>
-            <p class="error-msg"><%= error %></p>
-        <% } %>
-
-        <form action="/user/login" method="POST">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" placeholder="Enter your email" required>
-
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
-
-            <button type="submit">Log In</button>
-        </form>
-
-        <p class="signup-link">Don't have an account? <a href="/amazon-clone/signup">Sign up</a></p>
-    </div>
-
+  <div id="root" data-mode="login"
+       data-error="<%= typeof error !== 'undefined' ? error : '' %>"></div>
+  <script type="module" src="/client-assets/assets/app.js"></script>
 </body>
 </html>

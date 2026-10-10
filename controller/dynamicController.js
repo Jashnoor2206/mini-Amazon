@@ -16,7 +16,8 @@ async function createUser(req, res){
         })
     }catch(err){
         console.log(err);
-        return res.render('error');
+        const msg = err.code === 11000 ? "Email already registered" : "Something went wrong";
+        return res.render('signup', { error: msg });
     }
     const token = setUser(newUser);
     res.cookie("uuid", token);
@@ -33,7 +34,7 @@ async function enterAddress(req, res){
         return res.redirect('/amazon-clone');
     }catch(err){
         console.log(err);
-        return res.render('address', { error: "Something went wrong, please try again" });
+        return res.render('address', { userId, error: "Something went wrong, please try again" });
     }
 }
 
