@@ -1,4 +1,3 @@
-
 const cartCount = document.querySelector('.cart-count');
 const buttons  = document.querySelectorAll('.add-to-cart');
 

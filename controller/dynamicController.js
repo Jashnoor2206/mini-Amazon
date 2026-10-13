@@ -90,6 +90,29 @@ async function homePage(req, res){
     }
 }
 
+async function increaseQuantity(req, res){
+    const {listingID} = req.body;
+    try{
+        const listing = await Listing.findById(listingID);
+        const user = await User.findById(req.user._id);
+        const product = user.cart.find(item => item.listing.toString() === listingID);
+
+        if(product.quantity >= listing.stock){
+            return res.status(400).json({error : 'No more stock available'});
+        }
+        product.quantity += 1;
+        await user.save();
+        return res.status(200);
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({error : ' some unknown error occurred '});
+    }
+
+}
+async function addToWishlist(req, res){
+
+}
+
 async function addToCart(req, res){
     const {listingID} = req.body;
     try{
@@ -103,7 +126,7 @@ async function addToCart(req, res){
 
         if(existingProduct){
             if(existingProduct.quantity >= listing.stock){
-                return res.status(400).json({error : 'Stock if finished'});
+                return res.status(400).json({error : 'Stock is finished'});
             }
 
             existingProduct.quantity += 1;
@@ -127,5 +150,7 @@ module.exports = {
     handleLogin,
     homePage,
     profilePage,
-    addToCart
+    addToCart,
+    addToWishlist,
+    increaseQuantity
 }
