@@ -109,6 +109,25 @@ async function increaseQuantity(req, res){
     }
 
 }
+async function decreaseQuantity(req, res){
+    const {listingID} = req.body;
+    try{
+        const user = await User.findById(req.user._id);
+        const product = user.cart.find(item => item.listing.toString() === listingID);
+        if(product.quantity === 1){
+            user.cart = user.cart.filter(
+                item => item.listing.toString() !== listingID
+            ); // this keeps every item other than one that has same listing id, removing the listing product completely
+        }else{
+            product.quantity -= 1;
+        }
+
+        await user.save();
+        return res.status(200).json({quantity : product.quantity})
+    }catch(err){
+        return res.status(500).json({error : 'some unexpected error occurred '});
+    }
+}
 async function addToWishlist(req, res){
 
 }
@@ -152,5 +171,6 @@ module.exports = {
     profilePage,
     addToCart,
     addToWishlist,
-    increaseQuantity
+    increaseQuantity,
+    decreaseQuantity
 }

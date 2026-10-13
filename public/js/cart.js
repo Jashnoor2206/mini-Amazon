@@ -33,3 +33,29 @@ incrementBtns.forEach(btn =>{
         }
     })
 });
+
+decrementBtns.forEach(btn => {
+    btn.addEventListener('click', async() =>{
+        const listingID = btn.dataset.listingId;
+        btn.disabled = true;
+
+        try{
+            const res = await fetch('/user/cart/decrementQuantity', {
+                method : 'PATCH',
+                headers : {'Content-Type' : 'application/json'},
+                body : JSON.stringify({listingID})
+            })
+            const data = await res.json();
+            if(!res.ok){
+                alert(data.error);
+                return;
+            }
+
+            btn.nextElementSibling.textContent = data.quantity;
+        }catch(err){
+            console.log(err);
+        }finally{
+            btn.disabled = false;
+        }
+    })
+});

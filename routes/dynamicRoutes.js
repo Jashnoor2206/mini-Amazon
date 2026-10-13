@@ -7,7 +7,8 @@ const {
     handleLogin,
     addToCart,
     addToWishlist,
-    increaseQuantity
+    increaseQuantity,
+    decreaseQuantity
 } = require('../controller/dynamicController');
 const userModel = require('../model/user');
 
@@ -17,5 +18,6 @@ router.post('/login', handleLogin);
 router.post('/cart/add',requireLoginApi, addToCart);
 router.post('/wishlist/add', requireLoginApi, addToWishlist);
 router.patch('/cart/incrementQuantity',requireLoginApi, increaseQuantity);
+router.patch('/cart/decrementQuantity', requireLoginApi, decreaseQuantity);
 
 module.exports = router;
