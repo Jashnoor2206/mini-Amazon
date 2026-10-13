@@ -102,7 +102,7 @@ async function increaseQuantity(req, res){
         }
         product.quantity += 1;
         await user.save();
-        return res.status(200);
+        return res.status(200).json({quantity : product.quantity});
     }catch(err){
         console.log(err);
         return res.status(500).json({error : ' some unknown error occurred '});

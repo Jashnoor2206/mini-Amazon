@@ -17,12 +17,14 @@ incrementBtns.forEach(btn =>{
             const data = await res.json();
             if(res.status === 400){
                 alert(data.message);
+                return ;
             }
             if(!res.ok){
                 alert(data.message || 'Some error occurred while adding product');
+                return ;
             }
 
-            btn.previousElementSibling.textContent=Number(btn.previousElementSibling.textContent) + 1;
+            btn.previousElementSibling.textContent = data.quantity;
 
         }catch(err){
             console.log(err);
