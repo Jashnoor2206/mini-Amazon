@@ -16,6 +16,12 @@ function addressPage(req, res){
 function loginPage(req, res){
     res.render('login');
 }
+function cart(req, res){
+
+}
+function wishlist(req, res){
+    
+}
 
 module.exports = {
     signupPage,
