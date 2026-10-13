@@ -16,15 +16,17 @@ function addressPage(req, res){
 function loginPage(req, res){
     res.render('login');
 }
-function cart(req, res){
-
-}
-function wishlist(req, res){
+function cartPage(req, res){
     
+}
+function wishlistPage(req, res){
+
 }
 
 module.exports = {
     signupPage,
     addressPage,
-    loginPage
+    loginPage,
+    cartPage,
+    wishlistPage
 }

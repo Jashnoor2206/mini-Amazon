@@ -90,6 +90,35 @@ async function homePage(req, res){
     }
 }
 
+async function addToCart(req, res){
+    const {listingID} = req.body;
+    try{
+        const listing = await Listing.findById(listingID);
+        if(!listing || listing.status !== 'active' || listing.stock < 1){
+            return res.status(400).json({error : 'Item unavailable'});
+        }
+
+        const dbUser = await User.findById(req.user._id);
+        const existingProduct = dbUser.cart.find(item => item.listing.toString() === listingID);
+
+        if(existingProduct){
+            if(existingProduct.quantity >= listing.stock){
+                return res.status(400).json({error : 'Stock if finished'});
+            }
+
+            existingProduct.quantity += 1;
+        }else{
+            dbUser.cart.push({listing : listingID, quantity : 1});
+        }
+        await dbUser.save();
+        return res.json({cartCount : dbUser.cart.length});
+
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({error : 'Something went wrong'});
+    }
+}
+
 // Now since the listing only stores the reference id of the product in the form of string , so to fetch the actual product in items collection you need to write .populate , same logic for seller. From seller we fetch the storeName and rating , limit(20) caps the query to return only atmax 20 documents so that it does not causes delay in the system while fetching. We will pair it with .skip later and move to page 1, 2 etc
 
 module.exports = {
@@ -97,5 +126,6 @@ module.exports = {
     enterAddress,
     handleLogin,
     homePage,
-    profilePage
+    profilePage,
+    addToCart
 }

@@ -13,6 +13,18 @@ async function restrictToLoggedInUser(req, res, next){
     }
 }
 
+function requireLoginApi(req, res, next){
+    try{
+        const user = getUser(req.cookies.uuid);
+        if(!user) return res.status(401).json({ error: 'Login required' });
+        req.user = user;
+        next();
+    }catch(err){
+        return res.status(401).json({ error: 'Login required' });
+    }
+}
+
 module.exports = {
+    requireLoginApi,
     restrictToLoggedInUser
 };
