@@ -131,6 +131,22 @@ async function decreaseQuantity(req, res){
         return res.status(500).json({error : 'some unexpected error occurred '});
     }
 }
+
+async function removeItem(req, res){
+    const {listingID} = req.body;
+    try{
+        const user = await User.findById(req.user._id);
+        user.cart = user.cart.filter(
+            item => item.listing.toString() !== listingID
+        ); 
+        await user.save();
+        return res.status(200).json({removed : true});
+
+    }catch(err){
+        return res.status(500).json({message : 'some unexpected error occurred '});
+    }
+}
+
 async function addToWishlist(req, res){
 
 }
@@ -175,5 +191,6 @@ module.exports = {
     addToCart,
     addToWishlist,
     increaseQuantity,
-    decreaseQuantity
+    decreaseQuantity,
+    removeItem
 }

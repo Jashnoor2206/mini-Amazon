@@ -1,6 +1,8 @@
 const incrementBtns = document.querySelectorAll('[data-cart-action="inc"]');
 const decrementBtns = document.querySelectorAll('[data-cart-action="dec"]');
 const formatINR = n => '₹' + n.toLocaleString('en-IN');
+const removeBtns = document.querySelectorAll('.remove-btn');
+
 
 function updateSummary() {
     let totalItems = 0;
@@ -13,6 +15,42 @@ function updateSummary() {
     document.getElementById('summary-items').textContent = totalItems;
     document.getElementById('summary-total').textContent = formatINR(grandTotal);
 }
+
+removeBtns.forEach(btn => {
+    btn.addEventListener('click', async() =>{
+        btn.disabled = true;
+        const listingID = btn.dataset.listingId;
+        const item = btn.closest('.cart-item');
+        try{
+            const res = await fetch('/user/cart/removeItem', {
+                method : 'PATCH',
+                headers : {'Content-Type' : 'application/json'},
+                body : JSON.stringify({listingID})
+            })
+
+            const data = await res.json();
+            if(!res.ok){
+                alert(data.message);
+                return;
+            }
+            if(data.removed){
+                item.remove();
+                if(!document.querySelector('.cart-item')){
+                    location.reload();
+                    return;
+                }
+                updateSummary();
+                return;
+            }else{
+                alert('Some error occurred while removing item from cart please try again');
+            }
+        }catch(err){
+            console.log(err);
+        }finally{
+            btn.disabled = false;
+        }
+    })
+});
 
 incrementBtns.forEach(btn =>{
     btn.addEventListener('click', async() =>
