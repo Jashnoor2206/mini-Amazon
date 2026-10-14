@@ -102,7 +102,7 @@ async function increaseQuantity(req, res){
         }
         product.quantity += 1;
         await user.save();
-        return res.status(200).json({quantity : product.quantity});
+        return res.status(200).json({quantity : product.quantity, price : listing.price});
     }catch(err){
         console.log(err);
         return res.status(500).json({error : ' some unknown error occurred '});
@@ -112,6 +112,7 @@ async function increaseQuantity(req, res){
 async function decreaseQuantity(req, res){
     const {listingID} = req.body;
     try{
+        const listing = await Listing.findById(listingID);
         const user = await User.findById(req.user._id);
         const product = user.cart.find(item => item.listing.toString() === listingID);
         if(product.quantity === 1){
@@ -123,7 +124,7 @@ async function decreaseQuantity(req, res){
         }
 
         await user.save();
-        return res.status(200).json({quantity : product.quantity})
+        return res.status(200).json({quantity : product.quantity, price : listing.price});
     }catch(err){
         return res.status(500).json({error : 'some unexpected error occurred '});
     }

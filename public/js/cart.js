@@ -1,9 +1,23 @@
 const incrementBtns = document.querySelectorAll('[data-cart-action="inc"]');
 const decrementBtns = document.querySelectorAll('[data-cart-action="dec"]');
+const formatINR = n => '₹' + n.toLocaleString('en-IN');
+
+function updateSummary(price) {
+    let totalItems = 0;
+    let grandTotal = 0;
+    document.querySelectorAll('.cart-item').forEach(row => {
+        const q = Number(row.querySelector('.qty span').textContent);
+        totalItems += q;
+        grandTotal += Number(price) * q;
+    });
+    document.getElementById('summary-items').textContent = totalItems;
+    document.getElementById('summary-total').textContent = formatINR(grandTotal);
+}
 
 incrementBtns.forEach(btn =>{
     btn.addEventListener('click', async() =>
     {
+        const item = btn.closest('.cart-item');
         const listingID = btn.dataset.listingId;
         btn.disabled = true;
 
@@ -25,6 +39,8 @@ incrementBtns.forEach(btn =>{
             }
 
             btn.previousElementSibling.textContent = data.quantity;
+            item.querySelector('.line-total').textContent = formatINR(data.quantity * data.price);
+            updateSummary(data.price);
 
         }catch(err){
             console.log(err);
@@ -37,6 +53,7 @@ incrementBtns.forEach(btn =>{
 decrementBtns.forEach(btn => {
     btn.addEventListener('click', async() =>{
         const listingID = btn.dataset.listingId;
+        const item = btn.closest('.cart-item');
         btn.disabled = true;
 
         try{
@@ -52,6 +69,9 @@ decrementBtns.forEach(btn => {
             }
 
             btn.nextElementSibling.textContent = data.quantity;
+            item.querySelector('.line-total').textContent = formatINR(data.quantity * data.price);
+            updateSummary(data.price);
+
         }catch(err){
             console.log(err);
         }finally{
