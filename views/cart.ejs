@@ -30,7 +30,7 @@
 
         <ul class="cart-list">
           <% items.forEach(item => { const l = item.listing; %>
-            <li class="cart-item">
+            <li class="cart-item" data-price="<%= l.price %>" data-stock="<%= l.stock %>">
               <% if (l.product.images && l.product.images[0]) { %>
                 <img src="<%= l.product.images[0] %>" alt="<%= l.product.name %>">
               <% } else { %>

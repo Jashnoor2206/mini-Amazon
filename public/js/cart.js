@@ -2,13 +2,13 @@ const incrementBtns = document.querySelectorAll('[data-cart-action="inc"]');
 const decrementBtns = document.querySelectorAll('[data-cart-action="dec"]');
 const formatINR = n => '₹' + n.toLocaleString('en-IN');
 
-function updateSummary(price) {
+function updateSummary() {
     let totalItems = 0;
     let grandTotal = 0;
     document.querySelectorAll('.cart-item').forEach(row => {
         const q = Number(row.querySelector('.qty span').textContent);
         totalItems += q;
-        grandTotal += Number(price) * q;
+        grandTotal += Number(row.dataset.price) * q;
     });
     document.getElementById('summary-items').textContent = totalItems;
     document.getElementById('summary-total').textContent = formatINR(grandTotal);
@@ -67,10 +67,19 @@ decrementBtns.forEach(btn => {
                 alert(data.error);
                 return;
             }
+            if(data.removed){
+                item.remove();
+                if (!document.querySelector('.cart-item')) { // checks whether any rows are left in the cart or not , if no then reload the page
+                    location.reload();
+                    return;
+                }
+                updateSummary();
+                return;
+            }
 
             btn.nextElementSibling.textContent = data.quantity;
             item.querySelector('.line-total').textContent = formatINR(data.quantity * data.price);
-            updateSummary(data.price);
+            updateSummary();
 
         }catch(err){
             console.log(err);

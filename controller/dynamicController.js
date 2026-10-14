@@ -119,6 +119,8 @@ async function decreaseQuantity(req, res){
             user.cart = user.cart.filter(
                 item => item.listing.toString() !== listingID
             ); // this keeps every item other than one that has same listing id, removing the listing product completely
+            await user.save();
+            return res.status(200).json({quantity : 0 , removed : true});
         }else{
             product.quantity -= 1;
         }
