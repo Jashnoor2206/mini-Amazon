@@ -1,0 +1,81 @@
+.toast-container {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    z-index: 1000;
+    pointer-events: none;
+  }
+  
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: min(90vw, 380px);
+    padding: 12px 18px;
+    border-radius: 10px;
+    background: var(--ink, #232826);
+    color: var(--cream, #e8e6e1);
+    font-size: 14px;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(35, 40, 38, 0.25);
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  
+  .toast.show {
+    opacity: 1;
+    transform: none;
+  }
+  
+  .toast-icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: var(--olive, #a0aa88);
+    color: var(--ink, #232826);
+  }
+  
+  .toast-icon svg {
+    width: 14px;
+    height: 14px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  
+  .toast-error .toast-icon {
+    background: #c98a8f;
+  }
+  
+  .toast-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  /* small bump on the cart badge when an item is added */
+  .cart-count.bump {
+    animation: cart-bump 0.4s ease;
+  }
+  
+  @keyframes cart-bump {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.5); }
+    100% { transform: scale(1); }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .toast { transition: opacity 0.2s ease; transform: none; }
+    .cart-count.bump { animation: none; }
+  }
