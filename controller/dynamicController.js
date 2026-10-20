@@ -153,15 +153,23 @@ async function addToWishlist(req, res){
     const {listingID} = req.body;
     try{
         const listing = await Listing.findById(listingID);
-        const product = await Product.findbyId(listing.product);
-        const user = await User.findById(req.user._id);
-        
-        
-        
+        if(!listing) return res.status(400).json({error : 'Item not available'});
+
+        const dbUser = await User.findById(req.user._id);
+
+        const alreadyAdded = dbUser.wishlist.some(id => id.toString() === listing.product.toString());
+        if(!alreadyAdded){
+            dbUser.wishlist.push(listing.product);
+            await dbUser.save();
+        }
+        return res.status(200).json({wishlisted : true});
     }catch(err){
+        console.log(err);
         return res.status(500).json({error : 'Some unexpected error occurred'});
     }
 }
+
+
 
 async function addToCart(req, res){
     const {listingID} = req.body;
