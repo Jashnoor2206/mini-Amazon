@@ -150,9 +150,9 @@ async function removeItem(req, res){
 }
 
 async function addToWishlist(req, res){
-    const {listingID} = req.body;
+    const {listingId} = req.body;
     try{
-        const listing = await Listing.findById(listingID);
+        const listing = await Listing.findById(listingId);
         if(!listing) return res.status(400).json({error : 'Item not available'});
 
         const dbUser = await User.findById(req.user._id);
@@ -169,6 +169,22 @@ async function addToWishlist(req, res){
     }
 }
 
+async function removeFromWishlist(req, res){
+    const {listingId} = req.body;
+    try{
+        const listing = await Listing.findById(listingId);
+        if(!listing) return res.status(400).json({error : 'Item not available'});
+
+        const dbUser = await User.findById(req.user._id);
+
+        dbUser.wishlist = dbUser.wishlist.filter(id => id.toString() !== listing.product.toString());
+        await dbUser.save();
+        return res.status(200).json({wishlisted : false});
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({error : 'Some unexpected error occurred'});
+    }
+}
 
 
 async function addToCart(req, res){
@@ -212,5 +228,6 @@ module.exports = {
     addToWishlist,
     increaseQuantity,
     decreaseQuantity,
-    removeItem
+    removeItem,
+    removeFromWishlist
 }

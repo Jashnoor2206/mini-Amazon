@@ -9,9 +9,9 @@ const {
     addToWishlist,
     increaseQuantity,
     decreaseQuantity,
-    removeItem
+    removeItem,
+    removeFromWishlist
 } = require('../controller/dynamicController');
-const userModel = require('../model/user');
 
 router.post('/createUser', createUser);
 router.post('/addressPage/:userId', enterAddress);
@@ -21,6 +21,7 @@ router.post('/wishlist/add', requireLoginApi, addToWishlist);
 router.patch('/cart/incrementQuantity',requireLoginApi, increaseQuantity);
 router.patch('/cart/decrementQuantity', requireLoginApi, decreaseQuantity);
 router.patch('/cart/removeItem', requireLoginApi, removeItem);
-router.patch('/wishlist/addItem', requireLoginApi, addToWishlist);
+router.patch('/wishlist/add', requireLoginApi, addToWishlist);
+router.patch('/wishlist/remove' , requireLoginApi, removeFromWishlist);
 
 module.exports = router;
