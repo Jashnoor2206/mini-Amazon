@@ -10,6 +10,25 @@
     z-index: 1000;
     pointer-events: none;
   }
+  .wishlist-btn.bump {
+    animation: heart-bump 0.4s ease;
+  }
+  
+  @keyframes heart-bump {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.4); }
+    100% { transform: scale(1); }
+  }
+  
+  @media (prefers-reduced-motion: reduce) {
+    .wishlist-btn.bump { animation: none; }
+  }
+  .wishlist-btn.active {
+    color: #9b3d3d;
+  }
+  .wishlist-btn.active svg {
+    fill: currentColor;
+  }
   
   .toast {
     display: flex;

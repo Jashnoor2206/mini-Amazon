@@ -31,7 +31,38 @@ async function cartPage(req, res){
     res.render('cart', { user: dbUser, items, total });
 }
 async function wishlistPage(req, res){
+    try{
+        const dbUser = await User.findById(req.user._id).populate({
+            path: 'wishlist',
+            select: 'name images'
+        });
 
+        const products = dbUser.wishlist.filter(p => p); // skip deleted products
+
+        // find purchasable listings for all wishlisted products in ONE query
+        const listings = await Listing.find({
+            product: { $in: products.map(p => p._id) },
+            status: 'active',
+            stock: { $gt: 0 }
+        }).sort({ price: 1 }); // cheapest first
+
+        // keep only the cheapest listing per product
+        const listingByProduct = {};
+        listings.forEach(l => {
+            const key = l.product.toString();
+            if(!listingByProduct[key]) listingByProduct[key] = l;
+        });
+
+        const items = products.map(p => ({
+            product: p,
+            listingId: listingByProduct[p._id.toString()]?._id || null
+        }));
+
+        res.render('wishlist', { user: dbUser, items });
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Something went wrong while loading wishlist');
+    }
 }
 
 module.exports = {

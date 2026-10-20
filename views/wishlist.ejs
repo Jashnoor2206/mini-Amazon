@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Your Wishlist - Node</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/wishlist.css">
+  <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/amazon-clone" class="logo">Node</a>
+    </div>
+  </header>
+
+  <main class="wishlist-page">
+    <h1>Your wishlist</h1>
+
+    <% if (items.length === 0) { %>
+      <div class="wishlist-empty">
+        <p>Your wishlist is empty.</p>
+        <a href="/amazon-clone" class="btn-primary">Browse products</a>
+      </div>
+    <% } else { %>
+      <div class="wishlist-grid">
+        <% items.forEach(item => { %>
+          <article class="wishlist-card" data-product-id="<%= item.product._id %>">
+            <div class="wishlist-media">
+              <% if (item.product.images && item.product.images[0]) { %>
+                <img src="<%= item.product.images[0] %>" alt="<%= item.product.name %>">
+              <% } %>
+            </div>
+
+            <h3><%= item.product.name %></h3>
+
+            <div class="wishlist-actions">
+              <button type="button"
+                      class="add-to-cart"
+                      data-listing-id="<%= item.listingId || '' %>"
+                      <%= item.listingId ? '' : 'disabled' %>>
+                <%= item.listingId ? 'Add to cart' : 'Unavailable' %>
+              </button>
+              <button type="button"
+                      class="remove-wishlist"
+                      data-product-id="<%= item.product._id %>">
+                Remove
+              </button>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </main>
+
+  <script src="/js/toast.js"></script>
+  <script src="/js/wishlist.js"></script>
+</body>
+</html>

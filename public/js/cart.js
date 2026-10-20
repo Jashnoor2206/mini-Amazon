@@ -30,7 +30,7 @@ removeBtns.forEach(btn => {
 
             const data = await res.json();
             if(!res.ok){
-                alert(data.message);
+                showToast(data.message || 'Could not remove the item', 'error', 2000);
                 return;
             }
             if(data.removed){
@@ -42,7 +42,7 @@ removeBtns.forEach(btn => {
                 updateSummary();
                 return;
             }else{
-                alert('Some error occurred while removing item from cart please try again');
+                showToast('Something went wrong' , 'error', 2000);
             }
         }catch(err){
             console.log(err);
@@ -68,11 +68,11 @@ incrementBtns.forEach(btn =>{
 
             const data = await res.json();
             if(res.status === 400){
-                alert(data.message);
+                showToast(data.error || 'Could not increase the quantity ' , 'error' , 2000);
                 return ;
             }
             if(!res.ok){
-                alert(data.message || 'Some error occurred while adding product');
+                showToast(data.error || 'Some error occurred while adding product' , 'error' , 2000);
                 return ;
             }
 
@@ -102,7 +102,7 @@ decrementBtns.forEach(btn => {
             })
             const data = await res.json();
             if(!res.ok){
-                alert(data.error);
+                showToast(data.error || 'Could not decrease the quantity' , 'error' , 2000);
                 return;
             }
             if(data.removed){

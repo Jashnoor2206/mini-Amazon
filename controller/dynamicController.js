@@ -3,6 +3,7 @@ const {setUser} = require('../services/auth');
 const Listing = require('../model/listing');
 const {getUser} = require('../services/auth');
 const User = require('../model/user');
+const Product = require('../model/product');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
@@ -83,7 +84,8 @@ async function homePage(req, res){
         if(userPayload){
             user = await User.findById(userPayload._id);
         }
-        res.render('homePage', {listings, user: user});
+        const wishlistIds = user ? user.wishlist.map(id => id.toString()) : [];
+        res.render('homePage', {listings, user: user, wishlistIds});
     }catch(err){
         console.log(err);
         res.status(500).send('Something wrong happened while loading homePage')
@@ -148,7 +150,17 @@ async function removeItem(req, res){
 }
 
 async function addToWishlist(req, res){
-
+    const {listingID} = req.body;
+    try{
+        const listing = await Listing.findById(listingID);
+        const product = await Product.findbyId(listing.product);
+        const user = await User.findById(req.user._id);
+        
+        
+        
+    }catch(err){
+        return res.status(500).json({error : 'Some unexpected error occurred'});
+    }
 }
 
 async function addToCart(req, res){

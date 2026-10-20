@@ -21,5 +21,6 @@ router.post('/wishlist/add', requireLoginApi, addToWishlist);
 router.patch('/cart/incrementQuantity',requireLoginApi, increaseQuantity);
 router.patch('/cart/decrementQuantity', requireLoginApi, decreaseQuantity);
 router.patch('/cart/removeItem', requireLoginApi, removeItem);
+router.patch('/wishlist/addItem', requireLoginApi, addToWishlist);
 
 module.exports = router;
