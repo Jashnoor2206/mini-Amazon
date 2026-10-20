@@ -547,3 +547,4 @@ svg.icon {
     padding: 10px;
   }
 }
+.wishlist-btn { z-index: 2; }

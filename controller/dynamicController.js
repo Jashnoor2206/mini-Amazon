@@ -173,8 +173,6 @@ async function removeFromWishlist(req, res){
     const {listingId} = req.body;
     try{
         const listing = await Listing.findById(listingId);
-        if(!listing) return res.status(400).json({error : 'Item not available'});
-
         const dbUser = await User.findById(req.user._id);
 
         dbUser.wishlist = dbUser.wishlist.filter(id => id.toString() !== listing.product.toString());
