@@ -52,7 +52,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid 
 .btn-primary:hover { background: var(--ink); }
 
 /* checkout button when nothing is selected */
-.btn-primary.disabled { opacity: 0.45; pointer-events: none; cursor: not-allowed; }
+.btn-primary.disabled { opacity: 0.45; cursor: not-allowed; }
 
 .cart-empty { background: #fff; border-radius: 12px; padding: 48px 24px; text-align: center; box-shadow: 0 1px 3px rgba(35, 40, 38, 0.10); }
 .cart-empty p { color: var(--slate); }

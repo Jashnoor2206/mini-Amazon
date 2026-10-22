@@ -1,0 +1,81 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+body { background: var(--cream); color: var(--ink); }
+
+.topbar { background: var(--ink); color: #fff; }
+.topbar-inner { display: flex; align-items: center; padding: 12px 24px; max-width: 1400px; margin: 0 auto; }
+.logo { font-family: 'Pacifico', cursive; font-size: 32px; color: var(--cream); text-decoration: none; }
+
+.checkout-page { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+.checkout-page h1 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+
+.checkout-layout { display: grid; grid-template-columns: 1fr 440px; gap: 24px; align-items: start; }
+
+.checkout-card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(35, 40, 38, 0.10); }
+.checkout-card h2 { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
+
+/* ---------- left: addresses ---------- */
+.address-list { display: flex; flex-direction: column; gap: 12px; }
+
+.address-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid var(--olive);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.address-option:hover { background: var(--cream); }
+.address-option:has(input:checked) { border-color: var(--sage); background: rgba(124, 144, 130, 0.12); }
+
+.address-option input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--sage); cursor: pointer; }
+
+.address-label { display: inline-block; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--slate); margin-bottom: 4px; }
+.address-body p { font-size: 14px; line-height: 1.5; }
+
+.add-address-link { display: inline-block; margin-top: 16px; font-size: 14px; font-weight: 500; color: var(--slate); text-decoration: none; border-bottom: 1px solid var(--sage); }
+.add-address-link:hover { color: var(--ink); }
+
+.no-address { text-align: center; padding: 24px 0; }
+.no-address p { color: var(--slate); }
+
+/* ---------- right: order list ---------- */
+.order-card { position: sticky; top: 24px; }
+
+.order-list {
+  list-style: none;
+  max-height: 380px;          /* the list scrolls after this height */
+  overflow-y: auto;
+  margin: 0 -8px;
+  padding: 0 8px;
+}
+
+.order-item { display: grid; grid-template-columns: 70px 1fr auto; gap: 14px; padding: 14px 0; border-bottom: 1px solid var(--cream); align-items: start; }
+.order-item:last-child { border-bottom: none; }
+.order-item img, .img-placeholder { width: 70px; height: 70px; object-fit: contain; background: var(--cream); border-radius: 8px; }
+
+.order-info h3 { font-size: 14px; font-weight: 500; margin-bottom: 2px; }
+.seller { font-size: 12px; color: var(--slate); }
+.qty-line { font-size: 13px; margin-top: 6px; }
+.line-total { font-size: 14px; font-weight: 700; white-space: nowrap; }
+
+.order-totals { border-top: 1px solid var(--cream); margin-top: 8px; padding-top: 8px; }
+.summary-row { display: flex; justify-content: space-between; font-size: 14px; padding: 8px 0; color: var(--slate); }
+.summary-row.total { color: var(--ink); font-size: 18px; font-weight: 700; }
+
+.btn-primary { display: block; width: 100%; text-align: center; margin-top: 16px; background: var(--slate); color: #fff; text-decoration: none; border: none; cursor: pointer; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: background 0.2s; }
+.btn-primary:hover:not(:disabled) { background: var(--ink); }
+.btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+.no-address .btn-primary { display: inline-block; width: auto; padding: 12px 28px; }
+
+.back-link { display: block; text-align: center; margin-top: 14px; font-size: 13px; color: var(--slate); text-decoration: none; }
+.back-link:hover { color: var(--ink); }
+
+button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--sage); outline-offset: 2px; }
+
+@media (max-width: 860px) {
+  .checkout-layout { grid-template-columns: 1fr; }
+  .order-card { position: static; }
+}

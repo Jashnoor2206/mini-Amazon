@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Node</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/checkout.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/amazon-clone" class="logo">Node</a>
+    </div>
+  </header>
+
+  <main class="checkout-page">
+    <h1>Checkout</h1>
+
+    <form action="/user/placeOrder" method="POST" class="checkout-layout">
+
+      <!-- hidden field so the server knows which cart items are being ordered -->
+      <input type="hidden" name="items" value="<%= items.map(i => i.listing._id).join(',') %>">
+
+      <!-- LEFT: address selection -->
+      <section class="checkout-card">
+        <h2>Select delivery address</h2>
+
+        <% if (addresses.length === 0) { %>
+          <div class="no-address">
+            <p>You haven't added an address yet.</p>
+            <a href="/amazon-clone/enterAddress/<%= user._id %>" class="btn-primary">Add an address</a>
+          </div>
+        <% } else { %>
+          <div class="address-list">
+            <% addresses.forEach((a, i) => { %>
+              <label class="address-option">
+                <input type="radio" name="addressId" value="<%= a._id %>" <%= i === 0 ? 'checked' : '' %> required>
+                <div class="address-body">
+                  <span class="address-label"><%= a.label %></span>
+                  <p><%= a.street %></p>
+                  <p><%= a.city %>, <%= a.state %> - <%= a.postalCode %></p>
+                  <p><%= a.country %></p>
+                </div>
+              </label>
+            <% }) %>
+          </div>
+          <a href="/amazon-clone/enterAddress/<%= user._id %>" class="add-address-link">+ Add a new address</a>
+        <% } %>
+      </section>
+
+      <!-- RIGHT: products list (scrollable) + total -->
+      <aside class="checkout-card order-card">
+        <h2>Your order (<%= items.length %> <%= items.length === 1 ? 'product' : 'products' %>)</h2>
+
+        <ul class="order-list">
+          <% items.forEach(item => { const l = item.listing; %>
+            <li class="order-item">
+              <% if (l.product.images && l.product.images[0]) { %>
+                <img src="<%= l.product.images[0] %>" alt="<%= l.product.name %>">
+              <% } else { %>
+                <div class="img-placeholder"></div>
+              <% } %>
+
+              <div class="order-info">
+                <h3><%= l.product.name %></h3>
+                <p class="seller">Sold by <%= l.seller ? l.seller.storeName : 'Unknown seller' %></p>
+                <p class="qty-line">Qty: <%= item.quantity %> × ₹<%= l.price.toLocaleString('en-IN') %></p>
+              </div>
+
+              <div class="line-total">₹<%= (l.price * item.quantity).toLocaleString('en-IN') %></div>
+            </li>
+          <% }) %>
+        </ul>
+
+        <div class="order-totals">
+          <div class="summary-row">
+            <span>Payment</span>
+            <span>Cash on delivery</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span>₹<%= total.toLocaleString('en-IN') %></span>
+          </div>
+          <button type="submit" class="btn-primary" <%= addresses.length === 0 ? 'disabled' : '' %>>Place order</button>
+          <a href="/amazon-clone/cart" class="back-link">← Back to cart</a>
+        </div>
+      </aside>
+
+    </form>
+  </main>
+
+</body>
+</html>

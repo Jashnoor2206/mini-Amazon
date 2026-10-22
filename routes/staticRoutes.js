@@ -5,7 +5,8 @@ const {
     addressPage,
     loginPage,
     cartPage,
-    wishlistPage
+    wishlistPage,
+    checkoutPage
 } = require('../controller/staticRoutesController')
 const {
     homePage,
@@ -20,5 +21,6 @@ router.get('/login', loginPage);
 router.get('/profile', restrictToLoggedInUser, profilePage);
 router.get('/cart', restrictToLoggedInUser, cartPage);
 router.get('/wishlist', restrictToLoggedInUser, wishlistPage);
+router.get('/checkout', restrictToLoggedInUser, checkoutPage);
 
 module.exports = router;

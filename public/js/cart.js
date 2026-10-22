@@ -2,7 +2,7 @@ const incrementBtns = document.querySelectorAll('[data-cart-action="inc"]');
 const decrementBtns = document.querySelectorAll('[data-cart-action="dec"]');
 const formatINR = n => '₹' + n.toLocaleString('en-IN');
 const removeBtns = document.querySelectorAll('.remove-btn');
-const checkoutBtn = document.querySelector('.checkout-btn');
+const checkoutBtn = document.querySelector('.btn-primary');
 
 
 function updateSummary() {
@@ -23,16 +23,25 @@ function updateSummary() {
     document.getElementById('summary-items').textContent = totalItems;
     document.getElementById('summary-total').textContent = formatINR(grandTotal);
 
-    // the checkout link carries the selected listing ids
     checkoutBtn.href = '/amazon-clone/checkout?items=' + selectedIds.join(',');
-    checkoutBtn.classList.toggle('disabled', selectedIds.length === 0);
+    // path before the ? is the actual path and the path after it is the query string that gets sent in the url , since we dont have order or way to deal with orders in the database , we pass like this else we would have passed some post or patch request 
+    checkoutBtn.classList.toggle('disabled', selectedIds.length === 0); // if nothing is selected we add a disabled class 
 }
 
 document.querySelectorAll('.select-item').forEach(cb => {
     cb.addEventListener('change', updateSummary);
 });
 
-updateSummary();
+checkoutBtn.addEventListener('click', (e) => {
+    console.log('checkout button clicked');
+    updateSummary(); // refresh the href one last time before the browser follows it
+
+    if (checkoutBtn.classList.contains('disabled')) { // this checks that does the box currently have the disabled class 
+        console.log('if statement run');
+        e.preventDefault();
+        showToast('Select at least one item to checkout', 'error', 2000);
+    }
+});
 
 removeBtns.forEach(btn => {
     btn.addEventListener('click', async() =>{
