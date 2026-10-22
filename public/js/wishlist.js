@@ -1,4 +1,6 @@
 const wishlistBtns = document.querySelectorAll('.add-to-cart');
+const cartCount = document.querySelector('.cart-count');
+
 
 wishlistBtns.forEach(btn =>{
     btn.addEventListener('click' , async() =>{
@@ -19,11 +21,15 @@ wishlistBtns.forEach(btn =>{
                 }, 1500);
             }
 
+            const data = await res.json();
             if(!res.ok){
-                const data = await res.json();
                 showToast(data.error || 'Could not add to cart', 'error', 2200);
                 return;
             }
+            cartCount.textContent = data.cartCount;
+            cartCount.classList.remove('bump');
+            void cartCount.offsetWidth;
+            cartCount.classList.add('bump');
             showToast(productName + ' added to cart');
 
         }catch(err){

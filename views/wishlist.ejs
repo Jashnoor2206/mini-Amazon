@@ -15,11 +15,23 @@
   <header class="topbar">
     <div class="topbar-inner">
       <a href="/amazon-clone" class="logo">Node</a>
+
+      <nav class="topbar-actions">
+        <a href="/amazon-clone/cart" class="cart-link" aria-label="Go to cart">
+          <span class="cart-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            <span class="cart-count"><%= user && user.cart ? user.cart.length : 0 %></span>
+          </span>
+          <span class="cart-label">Cart</span>
+        </a>
+      </nav>
     </div>
   </header>
 
   <main class="wishlist-page">
-    <h1>Your wishlist</h1>
+    <div class="page-head">
+      <h1>Your wishlist</h1>
+    </div>
 
     <% if (items.length === 0) { %>
       <div class="wishlist-empty">
@@ -48,7 +60,6 @@
               </button>
               <button type="button"
                       class="remove-wishlist"
-                      data-listing-id="<%= item.listingId %>"
                       data-product-id="<%= item.product._id %>">
                 Remove
               </button>
