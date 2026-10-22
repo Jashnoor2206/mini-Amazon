@@ -16,8 +16,7 @@ const {
 router.post('/createUser', createUser);
 router.post('/addressPage/:userId', enterAddress);
 router.post('/login', handleLogin);
-router.post('/cart/add',requireLoginApi, addToCart);
-router.post('/wishlist/add', requireLoginApi, addToWishlist);
+router.patch('/cart/add',requireLoginApi, addToCart);
 router.patch('/cart/incrementQuantity',requireLoginApi, increaseQuantity);
 router.patch('/cart/decrementQuantity', requireLoginApi, decreaseQuantity);
 router.patch('/cart/removeItem', requireLoginApi, removeItem);

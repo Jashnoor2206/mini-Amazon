@@ -10,7 +10,7 @@ buttons.forEach(btn => {
         btn.disabled = true;
         try{
             const res = await fetch('/user/cart/add', {
-                method : 'POST',
+                method : 'PATCH',
                 headers : {'Content-Type' : 'application/json'},
                 body : JSON.stringify({listingID})
             });
