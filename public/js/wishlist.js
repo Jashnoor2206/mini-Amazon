@@ -1,5 +1,6 @@
 const wishlistBtns = document.querySelectorAll('.add-to-cart');
 const cartCount = document.querySelector('.cart-count');
+const removeBtns = document.querySelectorAll('.remove-wishlist');
 
 
 wishlistBtns.forEach(btn =>{
@@ -37,6 +38,27 @@ wishlistBtns.forEach(btn =>{
             showToast('Something went wrong', 'error', 2200);
         }finally{
             btn.disabled = false;
+        }
+    })
+})
+
+removeBtns.forEach(btn =>{
+    btn.addEventListener('click', async() =>{
+        const listingId = btn.dataset.listingId;
+        btn.disabled = true;
+
+        try{
+            const res = await fetch('/user/wishlist/remove', {
+                method : 'PATCH',
+                headers : {'Content-Type' : 'application/json'},
+                body : JSON.stringify({listingId})
+            })
+            if(!res.ok){
+                showToast('Something went wrong' , 'error ', 2000);
+            }
+            location.reload();
+        }catch(err){
+            console.log(err);
         }
     })
 })

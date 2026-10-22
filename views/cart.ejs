@@ -32,6 +32,13 @@
         <ul class="cart-list">
           <% items.forEach(item => { const l = item.listing; %>
             <li class="cart-item" data-price="<%= l.price %>" data-stock="<%= l.stock %>">
+
+              <input type="checkbox"
+                     class="select-item"
+                     data-listing-id="<%= l._id %>"
+                     aria-label="Select <%= l.product.name %> for checkout"
+                     checked>
+
               <% if (l.product.images && l.product.images[0]) { %>
                 <img src="<%= l.product.images[0] %>" alt="<%= l.product.name %>">
               <% } else { %>
@@ -45,7 +52,7 @@
 
                 <div class="qty-row">
                   <div class="qty">
-                    <button data-cart-action="dec" data-listing-id="<%= l._id %>"aria-label="Decrease quantity">−</button>
+                    <button data-cart-action="dec" data-listing-id="<%= l._id %>" aria-label="Decrease quantity">−</button>
                     <span><%= item.quantity %></span>
                     <button data-cart-action="inc" data-listing-id="<%= l._id %>" <%= item.quantity >= l.stock ? 'disabled' : '' %> aria-label="Increase quantity">+</button>
                   </div>
@@ -64,14 +71,14 @@
         <aside class="cart-summary">
           <h2>Order summary</h2>
           <div class="summary-row">
-            <span>Items</span>
+            <span>Selected items</span>
             <span id="summary-items"><%= items.reduce((n, i) => n + i.quantity, 0) %></span>
           </div>
           <div class="summary-row total">
             <span>Total</span>
             <span id="summary-total">₹<%= total.toLocaleString('en-IN') %></span>
           </div>
-          <a href="/amazon-clone/checkout" class="btn-primary">Proceed to checkout</a>
+          <a href="/amazon-clone/checkout" id="checkout-btn" class="btn-primary">Proceed to checkout</a>
         </aside>
 
       </div>

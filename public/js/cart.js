@@ -2,19 +2,37 @@ const incrementBtns = document.querySelectorAll('[data-cart-action="inc"]');
 const decrementBtns = document.querySelectorAll('[data-cart-action="dec"]');
 const formatINR = n => '₹' + n.toLocaleString('en-IN');
 const removeBtns = document.querySelectorAll('.remove-btn');
+const checkoutBtn = document.querySelector('.checkout-btn');
 
 
 function updateSummary() {
     let totalItems = 0;
     let grandTotal = 0;
+    const selectedIds = [];
+
     document.querySelectorAll('.cart-item').forEach(row => {
+        const checkbox = row.querySelector('.select-item');
+        if (!checkbox.checked) return;          // skip unticked items
+
         const q = Number(row.querySelector('.qty span').textContent);
         totalItems += q;
         grandTotal += Number(row.dataset.price) * q;
+        selectedIds.push(checkbox.dataset.listingId);
     });
+
     document.getElementById('summary-items').textContent = totalItems;
     document.getElementById('summary-total').textContent = formatINR(grandTotal);
+
+    // the checkout link carries the selected listing ids
+    checkoutBtn.href = '/amazon-clone/checkout?items=' + selectedIds.join(',');
+    checkoutBtn.classList.toggle('disabled', selectedIds.length === 0);
 }
+
+document.querySelectorAll('.select-item').forEach(cb => {
+    cb.addEventListener('change', updateSummary);
+});
+
+updateSummary();
 
 removeBtns.forEach(btn => {
     btn.addEventListener('click', async() =>{
