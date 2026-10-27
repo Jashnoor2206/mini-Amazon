@@ -93,11 +93,59 @@ async function wishlistPage(req, res){
     }
 }
 
+async function productPage(req, res){
+    try{
+        const { listingId } = req.params;
+
+        const listing = await Listing.findById(listingId)
+            .populate('product')
+            .populate('seller', 'storeName rating');
+
+        if(!listing || !listing.product){
+            return res.status(404).send('Product not found');
+        }
+
+        const offers = await Listing.find({ product: listing.product._id, status: 'active' })
+            .populate('seller', 'storeName rating')
+            .sort({ price: 1 });
+
+        let user = null;
+        try{
+            const payload = getUser(req.cookies.uuid);
+            if(payload) user = await User.findById(payload._id);
+        }catch(err){
+            user = null;
+        }
+
+        const wishlisted = user
+            ? user.wishlist.some(id => id.toString() === listing.product._id.toString())
+            : false;
+
+        // specifications is a Map in the schema, convert it to a plain object for EJS
+        const specs = listing.product.specifications
+            ? Object.fromEntries(listing.product.specifications)
+            : {};
+
+        res.render('product', {
+            listing,
+            product: listing.product,
+            offers,
+            user,
+            wishlisted,
+            specs
+        });
+    }catch(err){
+        console.log(err);
+        res.status(404).send('Product not found');
+    }
+}
+
 module.exports = {
     signupPage,
     addressPage,
     loginPage,
     cartPage,
     wishlistPage,
-    checkoutPage
+    checkoutPage,
+    productPage
 }

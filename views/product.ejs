@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= product.name %> - Node</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/product.css">
+  <link rel="stylesheet" href="/css/toast.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/amazon-clone" class="logo">Node</a>
+      <nav class="topbar-actions">
+        <a href="/amazon-clone/wishlist" class="top-link">Wishlist</a>
+        <a href="/amazon-clone/cart" class="top-link cart-link" aria-label="Go to cart">
+          <span class="cart-icon">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+            <span class="cart-count"><%= user && user.cart ? user.cart.length : 0 %></span>
+          </span>
+          <span>Cart</span>
+        </a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="product-page">
+
+    <p class="breadcrumb">
+      <a href="/amazon-clone">Home</a> ›
+      <%= product.category %>
+      <% if (product.subCategory) { %> › <%= product.subCategory %><% } %>
+    </p>
+
+    <section class="product-layout">
+
+      <!-- LEFT: image gallery -->
+      <div class="gallery">
+        <div class="gallery-main">
+          <% if (product.images && product.images.length) { %>
+            <img id="main-image" src="<%= product.images[0] %>" alt="<%= product.name %>">
+          <% } else { %>
+            <div class="img-placeholder">No image</div>
+          <% } %>
+        </div>
+
+        <% if (product.images && product.images.length > 1) { %>
+          <div class="thumbs">
+            <% product.images.forEach((img, i) => { %>
+              <button type="button" class="thumb <%= i === 0 ? 'active' : '' %>" data-src="<%= img %>" aria-label="Show image <%= i + 1 %>">
+                <img src="<%= img %>" alt="">
+              </button>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <!-- MIDDLE: product details -->
+      <div class="details">
+        <% if (product.brand) { %><p class="brand"><%= product.brand %></p><% } %>
+        <h1><%= product.name %></h1>
+
+        <p class="rating">
+          <% if (product.totalReviews > 0) { %>
+            ★ <%= product.averageRating.toFixed(1) %> <span>(<%= product.totalReviews %> reviews)</span>
+          <% } else { %>
+            <span>No reviews yet</span>
+          <% } %>
+        </p>
+
+        <p class="price">₹<%= listing.price.toLocaleString('en-IN') %></p>
+
+        <% if (product.description) { %>
+          <h2>About this item</h2>
+          <p class="description"><%= product.description %></p>
+        <% } %>
+
+        <% const specKeys = Object.keys(specs); %>
+        <% if (specKeys.length) { %>
+          <h2>Specifications</h2>
+          <table class="spec-table">
+            <% specKeys.forEach(key => { %>
+              <tr><th><%= key %></th><td><%= specs[key] %></td></tr>
+            <% }) %>
+          </table>
+        <% } %>
+      </div>
+
+      <!-- RIGHT: buy box -->
+      <aside class="buy-box">
+        <p class="price"><%= '₹' + listing.price.toLocaleString('en-IN') %></p>
+
+        <% const available = listing.status === 'active' && listing.stock > 0; %>
+        <% if (!available) { %>
+          <p class="stock out">Currently unavailable</p>
+        <% } else if (listing.stock <= 5) { %>
+          <p class="stock low">Only <%= listing.stock %> left in stock</p>
+        <% } else { %>
+          <p class="stock">In stock</p>
+        <% } %>
+
+        <ul class="meta">
+          <li><span>Sold by</span> <strong><%= listing.seller ? listing.seller.storeName : 'Node seller' %></strong></li>
+          <% if (listing.seller && listing.seller.rating > 0) { %>
+            <li><span>Seller rating</span> <strong>★ <%= listing.seller.rating.toFixed(1) %></strong></li>
+          <% } %>
+          <li><span>Condition</span> <strong class="cap"><%= listing.condition %></strong></li>
+          <li><span>Payment</span> <strong>Cash on delivery</strong></li>
+        </ul>
+
+        <button type="button" class="add-to-cart btn-main"
+                data-listing-id="<%= listing._id %>"
+                data-product-name="<%= product.name %>"
+                <%= available ? '' : 'disabled' %>>Add to cart</button>
+
+        <button type="button"
+                class="wishlist-btn <%= wishlisted ? 'active' : '' %>"
+                data-listing-id="<%= listing._id %>"
+                data-product-name="<%= product.name %>">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span class="wishlist-text"><%= wishlisted ? 'In your wishlist' : 'Add to wishlist' %></span>
+        </button>
+      </aside>
+    </section>
+
+    <!-- OTHER SELLERS -->
+    <% if (offers.length > 1) { %>
+      <section class="offers">
+        <h2>All sellers for this product</h2>
+        <div class="offers-table">
+          <% offers.forEach(o => { %>
+            <div class="offer-row <%= o._id.toString() === listing._id.toString() ? 'current' : '' %>">
+              <div class="offer-seller">
+                <strong><%= o.seller ? o.seller.storeName : 'Node seller' %></strong>
+                <span class="cap"><%= o.condition %></span>
+              </div>
+              <div class="offer-price">₹<%= o.price.toLocaleString('en-IN') %></div>
+              <div class="offer-stock <%= o.stock > 0 ? '' : 'out' %>"><%= o.stock > 0 ? 'In stock' : 'Out of stock' %></div>
+              <div class="offer-actions">
+                <% if (o._id.toString() !== listing._id.toString()) { %>
+                  <a href="/amazon-clone/product/<%= o._id %>" class="offer-view">View</a>
+                <% } else { %>
+                  <span class="offer-viewing">Viewing</span>
+                <% } %>
+                <button type="button" class="add-to-cart btn-small"
+                        data-listing-id="<%= o._id %>"
+                        data-product-name="<%= product.name %>"
+                        <%= o.stock > 0 ? '' : 'disabled' %>>Add to cart</button>
+              </div>
+            </div>
+          <% }) %>
+        </div>
+      </section>
+    <% } %>
+
+  </main>
+
+  <script src="/js/toast.js"></script>
+  <script src="/js/product.js"></script>
+</body>
+</html>

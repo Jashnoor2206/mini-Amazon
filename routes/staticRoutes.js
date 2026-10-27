@@ -6,12 +6,14 @@ const {
     loginPage,
     cartPage,
     wishlistPage,
-    checkoutPage
+    checkoutPage,
+    productPage
 } = require('../controller/staticRoutesController')
 const {
     homePage,
     profilePage
 } = require('../controller/dynamicController');
+const product = require('../model/product');
 const router = express.Router();
 
 router.get('/', homePage);
@@ -22,5 +24,6 @@ router.get('/profile', restrictToLoggedInUser, profilePage);
 router.get('/cart', restrictToLoggedInUser, cartPage);
 router.get('/wishlist', restrictToLoggedInUser, wishlistPage);
 router.get('/checkout', restrictToLoggedInUser, checkoutPage);
+router.get('/product/:listingId', productPage);
 
 module.exports = router;

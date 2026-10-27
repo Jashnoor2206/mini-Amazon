@@ -126,10 +126,12 @@
               <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
             </button>
             <% if (image) { %>
-              <img src="<%= image %>" alt="<%= listing.product.name %>">
+              <a href="/amazon-clone/product/<%= listing._id %>">
+                <img src="<%= image %>" alt="<%= listing.product.name %>">
+              </a>
             <% } %>
           </div>
-          <h3><%= listing.product.name %></h3>
+          <h3><a href="/amazon-clone/product/<%= listing._id %>"><%= listing.product.name %></a></h3>
           <p class="price">₹<%= Number(listing.price).toLocaleString('en-IN') %></p>
           <p class="seller">Sold by <%= listing.seller ? listing.seller.storeName : "Node seller" %></p>
           <p class="stock <%= listing.stock > 0 ? '' : 'out' %>"><%= listing.stock > 0 ? "In stock" : "Out of stock" %></p>
