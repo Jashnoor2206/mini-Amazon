@@ -1,4 +1,5 @@
 const user = require('../model/user');
+const bcrypt = require('bcrypt');
 const {setUser} = require('../services/auth');
 const Listing = require('../model/listing');
 const {getUser} = require('../services/auth');
@@ -7,12 +8,16 @@ const Product = require('../model/product');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
+    if(!password || password.length < 6){
+        res.render('signup', {error : "Password must be atleast 6 characters long"});
+    }
     let newUser;
     try{
+        const hashedPassword = await bcrypt.hash(password, 10);
         newUser = await user.create({
             name: name,
             email: email,
-            password: password,
+            password: hashedPassword,
             contact: contact
         })
     }catch(err){
@@ -40,16 +45,27 @@ async function enterAddress(req, res){
 }
 
 async function handleLogin(req, res){
-    const {email, password} = req.body;
-    const existingUser = await user.findOne({email, password});
-    if(!existingUser){
-        return res.render('login',{
-            error: "Invalid Username or Password"
-        });
+    try{
+        const {email, password} = req.body;
+        const existingUser = await user.findOne({ email: email.trim().toLowerCase() });
+        if(!existingUser){
+            return res.render('login',{
+                error: "Invalid Username or Password"
+            });
+        }
+        const match = await bcrypt.compare(password, existingUser.password);
+        if(!match){
+            return res.render('login', {
+                error : "Invalid Username or Password"
+            });
+        }
+        const token = setUser(existingUser);
+        res.cookie("uuid", token, {httpOnly : true});
+        return res.redirect('/amazon-clone');
+    }catch(err){
+        console.login(err);
+        res.render('login', {error : "Something went wrong"});
     }
-    const token = setUser(existingUser);
-    res.cookie("uuid", token);
-    return res.redirect('/amazon-clone');
 }
 
 async function profilePage(req, res){

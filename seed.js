@@ -1,5 +1,6 @@
 // dummy for the time being 
 const Listing = require('./model/listing');
+const bcrypt = require('bcrypt')
 const Product = require('./model/product');
 const Seller = require('./model/seller');
 const mongoose = require('mongoose');
@@ -20,7 +21,7 @@ async function seed(){
         {
           name: "Rajesh Kumar",
           email: "rajesh@teststore.com",
-          password: "test123",
+          password: await bcrypt.hash("test123", 10),
           contact: "9876543210",
           storeName: "TechBazaar",
           storeAdress: { street: "MG Road", city: "Bengaluru", state: "Karnataka", postalCode: "560001" },
@@ -31,7 +32,7 @@ async function seed(){
         {
           name: "Priya Sharma",
           email: "priya@gadgetworld.com",
-          password: "test123",
+          password: await bcrypt.hash("test123", 10),
           contact: "9876500000",
           storeName: "GadgetWorld",
           storeAdress: { street: "Park Street", city: "Kolkata", state: "West Bengal", postalCode: "700001" },
@@ -42,7 +43,7 @@ async function seed(){
         {
           name: "Pankaj Kumar",
           email: "pankaj2003@gmail.com",
-          password: "pankajandwife",
+          password: await bcrypt.hash("pankajandwife", 10),
           contact: "9822365521",
           storeName: "Sharma Cloth House",
           storeAdress: { street: "Blue Street", city: "Delhi", state: "New Delhi", postalCode: "130010"},
