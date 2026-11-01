@@ -37,10 +37,13 @@ async function enterAddress(req, res){
         const loggedInUser = await user.findById(userId);
         loggedInUser.addresses.push({label, street, city, state, postalCode, country});
         await loggedInUser.save();
+        if(req.body.from === 'addresses'){
+            return res.redirect('/amazon-clone/addresses');
+        }
         return res.redirect('/amazon-clone');
     }catch(err){
         console.log(err);
-        return res.render('address', { userId, error: "Something went wrong, please try again" });
+        return res.render('address', { userId, from: req.body.from === 'addresses' ? 'addresses' : '', error: "Something went wrong, please try again" });
     }
 }
 
@@ -66,6 +69,11 @@ async function handleLogin(req, res){
         console.login(err);
         res.render('login', {error : "Something went wrong"});
     }
+}
+
+function loggingOut(req, res){
+    res.clearCookie("uuid", { httpOnly: true });
+    return res.redirect('/amazon-clone/login');
 }
 
 async function profilePage(req, res){
@@ -201,6 +209,22 @@ async function removeFromWishlist(req, res){
 }
 
 
+async function removeAddress(req, res){
+    const {addressId} = req.params;
+    try{
+        const dbUser = await User.findById(req.user._id); // only ever the logged in user's own document
+        const address = dbUser && dbUser.addresses.id(addressId);
+        if(!address) return res.status(404).json({error : 'Address not found'});
+
+        address.deleteOne();
+        await dbUser.save();
+        return res.status(200).json({removed : true});
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({error : 'Some unexpected error occurred'});
+    }
+}
+
 async function addToCart(req, res){
     const {listingID} = req.body;
     try{
@@ -243,5 +267,7 @@ module.exports = {
     increaseQuantity,
     decreaseQuantity,
     removeItem,
-    removeFromWishlist
+    removeFromWishlist,
+    removeAddress,
+    loggingOut
 }

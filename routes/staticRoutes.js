@@ -4,6 +4,7 @@ const {
     signupPage,
     addressPage,
     loginPage,
+    addressListPage,
     cartPage,
     wishlistPage,
     checkoutPage,
@@ -21,6 +22,7 @@ router.get('/signup', signupPage);
 router.get('/enterAddress/:userId', addressPage);
 router.get('/login', loginPage);
 router.get('/profile', restrictToLoggedInUser, profilePage);
+router.get('/addresses', restrictToLoggedInUser, addressListPage);
 router.get('/cart', restrictToLoggedInUser, cartPage);
 router.get('/wishlist', restrictToLoggedInUser, wishlistPage);
 router.get('/checkout', restrictToLoggedInUser, checkoutPage);

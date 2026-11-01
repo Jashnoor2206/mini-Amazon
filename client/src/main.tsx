@@ -13,6 +13,7 @@ createRoot(root).render(
       mode={mode}
       error={root.dataset.error || undefined}
       userId={root.dataset.userId || undefined}
+      from={root.dataset.from || undefined}
     />
   </StrictMode>
 );

@@ -77,7 +77,7 @@
         <span class="action-arrow">›</span>
       </a>
 
-      <a href="/wishlist" class="action-item">
+      <a href="/amazon-clone/wishlist" class="action-item">
         <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Wishlist</span>
@@ -86,7 +86,7 @@
         <span class="action-arrow">›</span>
       </a>
 
-      <a href="/address" class="action-item">
+      <a href="/amazon-clone/addresses" class="action-item">
         <span class="action-icon"></span>
         <div class="action-text">
           <span class="action-title">Manage Addresses</span>
@@ -115,8 +115,8 @@
         <span class="action-arrow">›</span>
       </a>
 
-      <form action="/auth/logout" method="POST" class="logout-form">
-        <button type="submit" class="action-item logout-item">
+      <form action="/user/logout" method="POST" class="logout-form" id="logout-form">
+        <button type="button" id="logout-open" class="action-item logout-item">
           <span class="action-icon"></span>
           <div class="action-text">
             <span class="action-title">Logout</span>
@@ -125,9 +125,17 @@
           <span class="action-arrow">›</span>
         </button>
       </form>
+      
+      <dialog id="logout-dialog" class="confirm-dialog">
+        <p class="confirm-text">Do you want to logout?</p>
+        <div class="confirm-actions">
+          <button type="button" id="logout-no" class="confirm-btn confirm-no">No</button>
+          <button type="submit" form="logout-form" class="confirm-btn confirm-yes">Yes</button>
+        </div>
+      </dialog>
     </div>
 
   </div>
-
+  <script src="/js/profile.js"></script>
 </body>
 </html>

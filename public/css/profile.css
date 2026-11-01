@@ -201,3 +201,64 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* logout confirmation */
+.confirm-dialog {
+  border: none;
+  border-radius: 12px;
+  padding: 28px 28px 22px;
+  width: min(90vw, 340px);
+  margin: auto;
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 12px 40px rgba(35, 40, 38, 0.25);
+}
+
+.confirm-dialog::backdrop {
+  background: rgba(35, 40, 38, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.confirm-text {
+  font-size: 16px;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 22px;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.confirm-btn {
+  flex: 1;
+  height: 42px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.confirm-no {
+  background: none;
+  border: 1px solid var(--olive);
+  color: var(--slate);
+}
+
+.confirm-no:hover {
+  background: var(--cream);
+  color: var(--ink);
+}
+
+.confirm-yes {
+  background: #b3261e;
+  border: 1px solid #b3261e;
+  color: #fff;
+}
+
+.confirm-yes:hover {
+  background: #8f1d17;
+}

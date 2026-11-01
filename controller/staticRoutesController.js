@@ -11,10 +11,21 @@ function signupPage(req, res){
 }
 function addressPage(req, res){
     const {userId} = req.params;
-    res.render('address', {userId});
+    const from = req.query.from === 'addresses' ? 'addresses' : ''; // only allow the one known value
+    res.render('address', {userId, from});
 }
 function loginPage(req, res){
     res.render('login');
+}
+async function addressListPage(req, res){
+    try{
+        const dbUser = await User.findById(req.user._id);
+        if(!dbUser) return res.redirect('/amazon-clone/login');
+        res.render('addressList', { user: dbUser, addresses: dbUser.addresses });
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Something went wrong while loading addresses');
+    }
 }
 async function cartPage(req, res){
     const dbUser = await User.findById(req.user._id).populate({
@@ -144,6 +155,7 @@ module.exports = {
     signupPage,
     addressPage,
     loginPage,
+    addressListPage,
     cartPage,
     wishlistPage,
     checkoutPage,

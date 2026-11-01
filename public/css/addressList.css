@@ -1,0 +1,97 @@
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+body { background: var(--cream); color: var(--ink); }
+
+.topbar { background: var(--ink); color: #fff; }
+.topbar-inner { display: flex; align-items: center; padding: 12px 24px; max-width: 1400px; margin: 0 auto; }
+.logo { font-family: 'Pacifico', cursive; font-size: 32px; color: var(--cream); text-decoration: none; }
+
+.address-page { max-width: 1100px; margin: 40px auto; padding: 0 20px; }
+
+.page-head { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
+.page-head h1 { font-size: 24px; font-weight: 600; }
+
+.back-link { font-size: 14px; font-weight: 500; color: var(--slate); text-decoration: none; border-bottom: 1px solid var(--sage); }
+.back-link:hover { color: var(--ink); }
+
+/* ---------- cards ---------- */
+.address-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.address-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 240px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(35, 40, 38, 0.10);
+}
+
+.address-card p { font-size: 14px; line-height: 1.6; }
+
+.address-tags { display: flex; gap: 8px; margin-bottom: 10px; }
+
+.address-label, .default-badge {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--slate);
+  background: rgba(124, 144, 130, 0.15);
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+.default-badge { color: #fff; background: var(--sage); }
+
+.address-name { font-weight: 600; }
+.address-contact { color: var(--slate); margin-top: 4px; }
+
+.address-actions { margin-top: auto; padding-top: 16px; border-top: 1px solid var(--cream); }
+
+.remove-btn {
+  background: none;
+  border: none;
+  color: #b3261e; /* red on purpose: destructive action */
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.remove-btn:hover { text-decoration: underline; }
+.remove-btn:disabled { opacity: 0.5; cursor: default; }
+
+/* ---------- add card ---------- */
+.add-card {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--slate);
+  background: transparent;
+  border: 2px dashed var(--olive);
+  box-shadow: none;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.add-card:hover { background: #fff; border-color: var(--sage); color: var(--ink); }
+
+.add-icon { font-size: 44px; font-weight: 300; line-height: 1; color: var(--sage); }
+.add-text { font-size: 16px; font-weight: 600; }
+
+.empty-state { margin-top: 20px; color: var(--slate); font-size: 14px; }
+/* remove confirmation */
+.confirm-dialog { border: none; border-radius: 12px; padding: 28px 28px 22px; width: min(90vw, 340px); margin: auto; background: #fff; color: var(--ink); box-shadow: 0 12px 40px rgba(35, 40, 38, 0.25); }
+.confirm-dialog::backdrop { background: rgba(35, 40, 38, 0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.confirm-text { font-size: 16px; font-weight: 500; text-align: center; margin-bottom: 22px; }
+.confirm-actions { display: flex; gap: 12px; }
+.confirm-btn { flex: 1; height: 42px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.confirm-no { background: none; border: 1px solid var(--olive); color: var(--slate); }
+.confirm-no:hover { background: var(--cream); color: var(--ink); }
+.confirm-yes { background: #b3261e; border: 1px solid #b3261e; color: #fff; }
+.confirm-yes:hover { background: #8f1d17; }
+
+@media (max-width: 600px) {
+  .page-head { flex-direction: column; }
+}

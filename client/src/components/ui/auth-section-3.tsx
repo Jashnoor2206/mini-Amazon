@@ -17,10 +17,12 @@ export default function AuthSection({
   mode,
   error,
   userId,
+  from,
 }: {
   mode: Mode;
   error?: string;
   userId?: string;
+  from?: string;
 }) {
   const isLogin = mode === "login";
   const isAddress = mode === "address";
@@ -58,6 +60,8 @@ export default function AuthSection({
             <form action={action} method="POST" className="mt-8 space-y-4">
               {isAddress ? (
                 <>
+                  {/* tells the server where to send the user after saving */}
+                  {from && <input type="hidden" name="from" value={from} />}
                   <InputField
                     label="Address label"
                     name="label"
