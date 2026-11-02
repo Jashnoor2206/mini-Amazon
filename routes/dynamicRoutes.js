@@ -12,7 +12,11 @@ const {
     removeItem,
     removeFromWishlist,
     removeAddress,
-    loggingOut
+    loggingOut,
+    handleForgotPassword,
+    resetPassword,
+    handleVerifyOtp,
+    handleResendOtp
 } = require('../controller/dynamicController');
 
 router.post('/createUser', createUser);
@@ -26,5 +30,9 @@ router.patch('/cart/removeItem', requireLoginApi, removeItem);
 router.patch('/wishlist/add', requireLoginApi, addToWishlist);
 router.patch('/wishlist/remove' , requireLoginApi, removeFromWishlist);
 router.delete('/address/:addressId', requireLoginApi, removeAddress);
+router.post('/forgot-password', handleForgotPassword);
+router.post('/verify-otp', handleVerifyOtp);
+router.post('/resend-otp', handleResendOtp);
+router.post('/reset-password', resetPassword);
 
 module.exports = router;

@@ -1,0 +1,60 @@
+/* Verify OTP page: builds on forgotPassword.css (fp-* classes) */
+
+.otp-email {
+  font-weight: 600;
+  color: var(--ink, #232826);
+  word-break: break-all;
+}
+
+.otp-input-wrap {
+  height: 56px;
+}
+
+.otp-input {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.6em;
+  /* letter-spacing adds space after the last digit too; this re-centres it */
+  padding-left: 0.6em;
+  font-variant-numeric: tabular-nums;
+}
+
+.otp-input::placeholder {
+  letter-spacing: 0.6em;
+  color: rgba(35, 40, 38, 0.25);
+}
+
+.otp-attempts {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: rgba(35, 40, 38, 0.55);
+  text-align: right;
+}
+
+.otp-resend {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: rgba(35, 40, 38, 0.6);
+}
+
+.otp-resend-btn {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--ink, #232826);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.otp-resend-btn:hover {
+  opacity: 0.75;
+}

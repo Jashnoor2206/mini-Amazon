@@ -6,10 +6,35 @@
   <title>Log In</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/client-assets/assets/app.css">
+  <link rel="stylesheet" href="/css/forgotPassword.css">
 </head>
 <body>
   <div id="root" data-mode="login"
        data-error="<%= typeof error !== 'undefined' ? error : '' %>"></div>
   <script type="module" src="/client-assets/assets/app.js"></script>
+
+  <!-- Adds a "Forgot password?" link under the password field once the React form has rendered -->
+  <script>
+    (function () {
+      var root = document.getElementById('root');
+      function addForgotLink() {
+        if (document.querySelector('.forgot-link-row')) return true;
+        var password = root.querySelector('input[name="password"]');
+        if (!password) return false;
+        var field = password.closest('.space-y-1\\.5') || password.parentElement.parentElement;
+        var row = document.createElement('div');
+        row.className = 'forgot-link-row';
+        row.innerHTML = '<a href="/amazon-clone/forgot-password" class="forgot-link">Forgot password?</a>';
+        field.insertAdjacentElement('afterend', row);
+        return true;
+      }
+      if (!addForgotLink()) {
+        var observer = new MutationObserver(function () {
+          if (addForgotLink()) observer.disconnect();
+        });
+        observer.observe(root, { childList: true, subtree: true });
+      }
+    })();
+  </script>
 </body>
 </html>

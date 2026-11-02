@@ -76,9 +76,15 @@ const  userSchema = new mongoose.Schema({
         type: String,
         enum: ["active", "suspended", "banned"],
         default: "active"
-    }
+    },
+    // password reset
+    resetOtpHash:     { type: String,  default: null },  // bcrypt hash of the OTP, never the OTP itself
+    resetOtpExpires:  { type: Date,    default: null },  // now + 10 minutes
+    resetOtpAttempts: { type: Number,  default: 0 },     // wrong tries so far
+    resetOtpSentAt:   { type: Date,    default: null },  // for the resend cooldown
 
 }, {timestamps : true});
+
 
 const user = mongoose.model("users", userSchema);
 module.exports = user;

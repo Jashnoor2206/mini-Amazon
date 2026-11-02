@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Code</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="stylesheet" href="/css/forgotPassword.css">
+  <link rel="stylesheet" href="/css/verifyOtp.css">
+</head>
+<body class="fp-body">
+  <section class="fp-shell">
+    <!-- Left: form -->
+    <div class="fp-panel">
+      <div class="fp-inner">
+        <a href="/amazon-clone/forgot-password" class="fp-back">&larr; Use a different email</a>
+
+        <h1 class="fp-heading">Enter the code</h1>
+        <p class="fp-sub">
+          If
+          <% if (typeof email !== 'undefined' && email) { %>
+            <strong class="otp-email"><%= email %></strong>
+          <% } else { %>
+            your email
+          <% } %>
+          is registered, we've sent a 6-digit code to it. It expires in 10 minutes.
+        </p>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+          <p class="fp-alert fp-alert-error"><%= error %></p>
+        <% } %>
+        <% if (typeof message !== 'undefined' && message) { %>
+          <p class="fp-alert fp-alert-success"><%= message %></p>
+        <% } %>
+
+        <form action="/user/verify-otp" method="POST" class="fp-form">
+          <div class="fp-field">
+            <label for="otp" class="fp-label">6-digit code</label>
+            <div class="fp-input-wrap otp-input-wrap">
+              <input
+                id="otp"
+                name="otp"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                pattern="[0-9]{6}"
+                maxlength="6"
+                required
+                autofocus
+                placeholder="••••••"
+                title="Enter the 6-digit code from your email"
+                class="fp-input otp-input"
+              >
+            </div>
+            <% if (typeof attemptsLeft !== 'undefined' && attemptsLeft !== null) { %>
+              <p class="otp-attempts"><%= attemptsLeft %> attempt<%= attemptsLeft === 1 ? '' : 's' %> left</p>
+            <% } %>
+          </div>
+
+          <button type="submit" class="fp-button">Verify code</button>
+        </form>
+
+        <form action="/user/resend-otp" method="POST" class="otp-resend">
+          <span>Didn't get it? Check spam, or</span>
+          <button type="submit" class="otp-resend-btn">resend code</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Right: quote panel -->
+    <div class="fp-art">
+      <p class="fp-quote">&ldquo;Almost there. One quick check and you're back in.&rdquo;</p>
+    </div>
+  </section>
+</body>
+</html>

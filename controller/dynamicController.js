@@ -1,10 +1,14 @@
 const user = require('../model/user');
+const crypto = require('crypto');
+const jwt = require('jsonwebtoken');
+const {sendOTP} = require('../services/mailer');
 const bcrypt = require('bcrypt');
 const {setUser} = require('../services/auth');
 const Listing = require('../model/listing');
 const {getUser} = require('../services/auth');
 const User = require('../model/user');
-const Product = require('../model/product');
+const MAX_ATTEMPTS = 5;
+// const Product = require('../model/product');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
@@ -66,9 +70,200 @@ async function handleLogin(req, res){
         res.cookie("uuid", token, {httpOnly : true});
         return res.redirect('/amazon-clone');
     }catch(err){
-        console.login(err);
+        console.log(err);
         res.render('login', {error : "Something went wrong"});
     }
+}
+
+async function handleForgotPassword(req, res){
+    const email = (req.body.email || '').trim().toLowerCase();
+    if(!email){
+        return res.render('forgotPassword', { error: 'Please enter your email' });
+    }
+    try{
+        const existingUser = await user.findOne({ email });
+        // only send otp when user exists and either they have been never sent a code or last otp was sent 60s ago
+        const canSend = existingUser &&
+            (!existingUser.resetOtpSentAt || Date.now() - existingUser.resetOtpSentAt.getTime() > 60 * 1000);
+
+        if(canSend){
+            const otp = crypto.randomInt(100000, 1000000).toString(); // always 6 digits
+            existingUser.resetOtpHash = await bcrypt.hash(otp, 10); // saves hash value of otp
+            existingUser.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // saves date of when otp will be expired
+            existingUser.resetOtpAttempts = 0; // saves attempts
+            existingUser.resetOtpSentAt = new Date(); // saves current date
+            await existingUser.save(); // saves everything to database
+            await sendOTP(email, otp); // sends otp
+        }
+
+        // next page needs to know which email the code was sent to , it puts email, stage: 'otp' and it is http only so javascript cannot read it , it will expire after 10 minutes as mentioned in the maxAge
+        const token = jwt.sign(
+            { email, stage: 'otp' }, 
+            process.env.SECRET, { expiresIn: '10m' }
+        );
+        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+        return res.redirect('/amazon-clone/verify-otp');
+    }catch(err){
+        console.log(err);
+        return res.render('forgotPassword', { error: 'Could not send the code, please try again', email });
+    }
+}
+
+async function handleResendOtp(req, res){
+    // 1. must still be on the OTP step
+    let data;
+    try{
+        data = jwt.verify(req.cookies.pwreset, process.env.SECRET);
+    }catch(err){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+    if(data.stage !== 'otp' || !data.email){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+    const email = data.email;
+
+    try{
+        const existingUser = await user.findOne({ email });
+
+        // 2. same 60-second cooldown as /forgot-password
+        const canSend = existingUser &&
+            (!existingUser.resetOtpSentAt || Date.now() - existingUser.resetOtpSentAt.getTime() > 60 * 1000);
+
+        if(canSend){
+            // 3. brand new code: replaces the old one and resets the attempt counter
+            const otp = crypto.randomInt(100000, 1000000).toString();
+            existingUser.resetOtpHash = await bcrypt.hash(otp, 10);
+            existingUser.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+            existingUser.resetOtpAttempts = 0;
+            existingUser.resetOtpSentAt = new Date();
+            await existingUser.save();
+            await sendOTP(email, otp);
+        }
+
+        // 4. give the cookie a fresh 10 minutes to match the new code
+        const token = jwt.sign({ email, stage: 'otp' }, process.env.SECRET, { expiresIn: '10m' });
+        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+
+        // 5. one message for every case, so nothing is revealed
+        return res.render('verifyOtp', {
+            email,
+            message: 'If this email is registered, a new code has been sent. You can request another after 60 seconds.'
+        });
+    }catch(err){
+        console.log(err);
+        return res.render('verifyOtp', { email, error: 'Could not resend the code, please try again' });
+    }
+}
+
+async function handleVerifyOtp(req, res){
+    // 1. read the cookie set by /forgot-password
+    let data;
+    try{
+        data = jwt.verify(req.cookies.pwreset, process.env.SECRET);
+    }catch(err){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+    if(data.stage !== 'otp' || !data.email){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+    const email = data.email;
+    const otp = (req.body.otp || '').trim();
+
+    // 2. basic format check
+    if(!/^\d{6}$/.test(otp)){
+        return res.render('verifyOtp', { email, error: 'Please enter the 6-digit code' });
+    }
+
+    try{
+        const existingUser = await user.findOne({ email });
+
+        // 3. no user, no code, or code expired -> same generic message
+        if(!existingUser || !existingUser.resetOtpHash ||
+           !existingUser.resetOtpExpires || existingUser.resetOtpExpires < new Date()){
+            return res.render('verifyOtp', { email, error: 'Code is invalid or has expired. Please request a new one.' });
+        }
+
+        // 4. too many wrong tries -> wipe the code
+        if(existingUser.resetOtpAttempts >= MAX_ATTEMPTS){
+            existingUser.resetOtpHash = null;
+            existingUser.resetOtpExpires = null;
+            await existingUser.save();
+            return res.render('verifyOtp', { email, error: 'Too many attempts. Please request a new code.' });
+        }
+
+        // 5. compare with the saved hash
+        const match = await bcrypt.compare(otp, existingUser.resetOtpHash);
+        if(!match){
+            existingUser.resetOtpAttempts += 1;
+            await existingUser.save();
+            const attemptsLeft = MAX_ATTEMPTS - existingUser.resetOtpAttempts;
+            return res.render('verifyOtp', {
+                email,
+                error: attemptsLeft > 0 ? 'Incorrect code' : 'Too many attempts. Please request a new code.',
+                attemptsLeft
+            });
+        }
+
+        // 6. correct: make the code single-use
+        existingUser.resetOtpHash = null;
+        existingUser.resetOtpExpires = null;
+        existingUser.resetOtpAttempts = 0;
+        await existingUser.save();
+
+        // 7. upgrade the cookie so /reset-password will open
+        const token = jwt.sign({ userId: existingUser._id, stage: 'reset' }, process.env.SECRET, { expiresIn: '10m' });
+        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+        return res.redirect('/amazon-clone/reset-password');
+    }catch(err){
+        console.log(err);
+        return res.render('verifyOtp', { email, error: 'Something went wrong, please try again' });
+    }
+}
+async function resetPassword(req, res){
+    // 1. only allow users who passed the OTP step
+    let data;
+    try{
+        data = jwt.verify(req.cookies.pwreset, process.env.SECRET);
+    }catch(err){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+    if(data.stage !== 'reset' || !data.userId){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+
+    // 2. validate on the server too (browser checks can be bypassed)
+    const { password, confirmPassword } = req.body;
+    if(!password || password.length < 6){
+        return res.render('resetPassword', { error: 'Password must be at least 6 characters long' });
+    }
+    if(password !== confirmPassword){
+        return res.render('resetPassword', { error: 'Passwords do not match' });
+    }
+
+    try{
+        const existingUser = await user.findById(data.userId);
+        if(!existingUser){
+            res.clearCookie('pwreset');
+            return res.redirect('/amazon-clone/forgot-password');
+        }
+
+        // 3. save the new hashed password and wipe any leftover OTP data
+        existingUser.password = await bcrypt.hash(password, 10);
+        existingUser.resetOtpHash = null;
+        existingUser.resetOtpExpires = null;
+        existingUser.resetOtpAttempts = 0;
+        await existingUser.save();
+
+        // 4. end the reset flow and any old login on this browser
+        res.clearCookie('pwreset');
+        const loginToken = setUser(existingUser);              // same as handleLogin
+        res.cookie('uuid', loginToken, { httpOnly: true });
+        return res.redirect('/amazon-clone');
+    }catch(err){
+        console.log(err);
+        return res.render('resetPassword', { error: 'Something went wrong, please try again' });
+    }
+
 }
 
 function loggingOut(req, res){
@@ -269,5 +464,9 @@ module.exports = {
     removeItem,
     removeFromWishlist,
     removeAddress,
-    loggingOut
+    loggingOut,
+    handleForgotPassword,
+    resetPassword,
+    handleVerifyOtp,
+    handleResendOtp
 }

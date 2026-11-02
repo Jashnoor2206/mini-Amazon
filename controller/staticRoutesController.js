@@ -1,6 +1,7 @@
 const Listing = require('../model/listing');
 const User = require('../model/user');
 const {getUser} = require('../services/auth');
+const jwt = require('jsonwebtoken');
 const path = require('path');
 require('../model/product');
 require('../model/seller');
@@ -16,6 +17,43 @@ function addressPage(req, res){
 }
 function loginPage(req, res){
     res.render('login');
+}
+function forgotPassword(req, res){
+    res.render('forgotPassword');
+}
+function verifyOtp(req, res){ // this controller verifies the cookie only so that user can go to verifyOtp ejs page
+    try{
+        const data = jwt.verify(
+            req.cookies.pwreset,
+            process.env.SECRET
+        );
+        if(data.stage !== 'otp'){
+            return res.redirect('/amazon-clone/forgot-password');
+        }
+        res.render('verifyOtp', {email : data.email});
+    }catch(err){
+        console.log(err);
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+}
+function resetPasswordPage(req, res){
+    try{
+        const data = jwt.verify(req.cookies.pwreset, process.env.SECRET);
+        if(data.stage !== 'reset') return res.redirect('/amazon-clone/forgot-password');
+        res.render('resetPassword');
+    }catch(err){
+        return res.redirect('/amazon-clone/forgot-password');
+    }
+}
+async function editProfile(req, res){
+    try{
+        const dbUser = await User.findById(req.user._id);
+        if(!dbUser) return res.redirect('/amazon-clone/login');
+        res.render('editProfile', { user: dbUser });
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Something went wrong while loading your profile');
+    }
 }
 async function addressListPage(req, res){
     try{
@@ -159,5 +197,9 @@ module.exports = {
     cartPage,
     wishlistPage,
     checkoutPage,
-    productPage
+    productPage,
+    editProfile,
+    forgotPassword,
+    verifyOtp,
+    resetPasswordPage
 }
