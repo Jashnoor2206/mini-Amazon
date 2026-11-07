@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order placed - Node</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/orderConfirmation.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/amazon-clone" class="logo">Node</a>
+    </div>
+  </header>
+
+  <main class="confirm-page">
+
+    <!-- success banner with the order id -->
+    <section class="confirm-banner">
+      <div class="check-icon" aria-hidden="true">&#10003;</div>
+      <div>
+        <h1>Order placed, thank you!</h1>
+        <p class="order-id">Order ID: <strong><%= order.orderID %></strong></p>
+        <p class="order-date">Placed on <%= new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) %></p>
+      </div>
+    </section>
+
+    <div class="confirm-layout">
+
+      <!-- LEFT: who it is going to -->
+      <section class="confirm-card">
+        <h2>Delivering to</h2>
+
+        <div class="customer">
+          <p class="customer-name"><%= order.name %></p>
+          <p class="customer-phone">Phone: <%= order.phone %></p>
+        </div>
+
+        <div class="address-block">
+          <span class="address-label"><%= order.shippingAddress.label %></span>
+          <p><%= order.shippingAddress.street %></p>
+          <p><%= order.shippingAddress.city %>, <%= order.shippingAddress.state %> - <%= order.shippingAddress.postalCode %></p>
+          <p><%= order.shippingAddress.country %></p>
+        </div>
+
+        <div class="summary-row">
+          <span>Payment</span>
+          <span>Cash on delivery</span>
+        </div>
+        <div class="summary-row">
+          <span>Status</span>
+          <span class="status-pill"><%= order.status %></span>
+        </div>
+      </section>
+
+      <!-- RIGHT: order summary -->
+      <aside class="confirm-card">
+        <h2>Order summary (<%= order.items.length %> <%= order.items.length === 1 ? 'product' : 'products' %>)</h2>
+
+        <ul class="order-list">
+          <% order.items.forEach(item => { %>
+            <li class="order-item">
+              <% if (item.image) { %>
+                <img src="<%= item.image %>" alt="<%= item.name %>">
+              <% } else { %>
+                <div class="img-placeholder"></div>
+              <% } %>
+
+              <div class="order-info">
+                <h3><%= item.name %></h3>
+                <p class="qty-line">Qty: <%= item.quantity %> × ₹<%= item.price.toLocaleString('en-IN') %></p>
+              </div>
+
+              <div class="line-total">₹<%= (item.price * item.quantity).toLocaleString('en-IN') %></div>
+            </li>
+          <% }) %>
+        </ul>
+
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>₹<%= order.totalAmount.toLocaleString('en-IN') %></span>
+        </div>
+
+        <a href="/amazon-clone" class="btn-primary">Continue shopping</a>
+      </aside>
+
+    </div>
+  </main>
+
+</body>
+</html>

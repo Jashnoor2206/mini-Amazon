@@ -12,7 +12,9 @@ const {
     editProfile,
     forgotPassword,
     verifyOtp,
-    resetPasswordPage
+    resetPasswordPage,
+    orderConfirmationPage,
+    getOrders
 } = require('../controller/staticRoutesController')
 const {
     homePage,
@@ -35,5 +37,7 @@ router.get('/profile/edit' ,restrictToLoggedInUser, editProfile);
 router.get('/forgot-password', forgotPassword);
 router.get('/verify-otp', verifyOtp);
 router.get('/reset-password', resetPasswordPage);
+router.get('/order/:orderID', restrictToLoggedInUser, orderConfirmationPage);
+router.get('/orders', restrictToLoggedInUser, getOrders);
 
 module.exports = router;

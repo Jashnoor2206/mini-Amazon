@@ -1,5 +1,6 @@
 const Listing = require('../model/listing');
 const User = require('../model/user');
+const Order = require('../model/order');
 const {getUser} = require('../services/auth');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -12,8 +13,12 @@ function signupPage(req, res){
 }
 function addressPage(req, res){
     const {userId} = req.params;
-    const from = req.query.from === 'addresses' ? 'addresses' : ''; // only allow the one known value
-    res.render('address', {userId, from});
+    const from = ['addresses', 'checkout'].includes(req.query.from) ? req.query.from : ''; // only allow known values
+    // for checkout mode, keep only valid-looking Mongo ids (24 hex chars) so nothing odd ends up in the page
+    const items = from === 'checkout'
+        ? (req.query.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',')
+        : '';
+    res.render('address', {userId, from, items});
 }
 function loginPage(req, res){
     res.render('login');
@@ -189,7 +194,31 @@ async function productPage(req, res){
     }
 }
 
+async function getOrders(req, res){
+    try{
+        const orders = await Order.find({user : req.user._id}).sort({createdAt:-1});
+        res.render('myOrders', {orders});
+    }catch(err){
+        console.log(err);
+        res.redirect('/amazon-clone');
+    }
+}
+
+async function orderConfirmationPage(req, res){
+    try{
+        // matching on user too means people can only open their own orders
+        const order = await Order.findOne({ orderID: req.params.orderID, user: req.user._id });
+        if(!order) return res.status(404).send('Order not found');
+
+        res.render('orderConfirmation', { order });
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Something went wrong while loading your order');
+    }
+}
+
 module.exports = {
+    orderConfirmationPage,
     signupPage,
     addressPage,
     loginPage,
@@ -201,5 +230,6 @@ module.exports = {
     editProfile,
     forgotPassword,
     verifyOtp,
-    resetPasswordPage
+    resetPasswordPage,
+    getOrders
 }

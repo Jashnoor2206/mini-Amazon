@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {requireLoginApi} = require('../middleware/auth');
+const {requireLoginApi, restrictToLoggedInUser} = require('../middleware/auth');
 const {
     createUser,
     enterAddress,
@@ -16,7 +16,8 @@ const {
     handleForgotPassword,
     resetPassword,
     handleVerifyOtp,
-    handleResendOtp
+    handleResendOtp,
+    placeOrder
 } = require('../controller/dynamicController');
 
 router.post('/createUser', createUser);
@@ -34,5 +35,6 @@ router.post('/forgot-password', handleForgotPassword);
 router.post('/verify-otp', handleVerifyOtp);
 router.post('/resend-otp', handleResendOtp);
 router.post('/reset-password', resetPassword);
+router.post('/placeOrder', restrictToLoggedInUser, placeOrder);
 
 module.exports = router;

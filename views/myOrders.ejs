@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Orders - Node</title>
+  <link rel="stylesheet" href="/css/theme.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/myOrders.css">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a href="/amazon-clone" class="logo">Node</a>
+    </div>
+  </header>
+
+  <main class="orders-page">
+    <div class="orders-header">
+      <h1>My Orders</h1>
+      <% if (orders.length > 0) { %>
+        <span class="orders-count"><%= orders.length %> <%= orders.length === 1 ? 'order' : 'orders' %></span>
+      <% } %>
+    </div>
+
+    <% if (orders.length === 0) { %>
+      <!-- empty state -->
+      <section class="empty-card">
+        <p>You haven't placed any orders yet.</p>
+        <a href="/amazon-clone" class="btn-primary">Start shopping</a>
+      </section>
+    <% } else { %>
+
+      <ul class="orders-list">
+        <% orders.forEach(order => {
+             const shown = order.items.slice(0, 3);            // show at most 3 thumbnails
+             const extra = order.items.length - shown.length;  // "+2 more"
+             const units = order.items.reduce((n, i) => n + i.quantity, 0);
+        %>
+          <li class="order-card">
+
+            <!-- top strip: id, date, total, status -->
+            <div class="order-head">
+              <div class="head-cell">
+                <span class="head-label">Order ID</span>
+                <span class="head-value mono"><%= order.orderID %></span>
+              </div>
+              <div class="head-cell">
+                <span class="head-label">Placed on</span>
+                <span class="head-value"><%= new Date(order.createdAt).toLocaleDateString('en-IN', { dateStyle: 'medium' }) %></span>
+              </div>
+              <div class="head-cell">
+                <span class="head-label">Total</span>
+                <span class="head-value">₹<%= order.totalAmount.toLocaleString('en-IN') %></span>
+              </div>
+              <span class="status-pill status-<%= order.status %>"><%= order.status %></span>
+            </div>
+
+            <!-- body: short summary of items + where it's going -->
+            <div class="order-body">
+              <div class="thumbs">
+                <% shown.forEach(item => { %>
+                  <% if (item.image) { %>
+                    <img src="<%= item.image %>" alt="<%= item.name %>" title="<%= item.name %>">
+                  <% } else { %>
+                    <div class="img-placeholder" title="<%= item.name %>"></div>
+                  <% } %>
+                <% }) %>
+                <% if (extra > 0) { %>
+                  <div class="more-badge">+<%= extra %></div>
+                <% } %>
+              </div>
+
+              <div class="summary">
+                <p class="item-names">
+                  <%= shown.map(i => i.name).join(', ') %><%= extra > 0 ? ` and ${extra} more` : '' %>
+                </p>
+                <p class="meta"><%= units %> <%= units === 1 ? 'item' : 'items' %> · Cash on delivery</p>
+                <p class="meta">Delivering to <%= order.name %>, <%= order.shippingAddress.city %> - <%= order.shippingAddress.postalCode %></p>
+              </div>
+
+              <a href="/amazon-clone/order/<%= order.orderID %>" class="details-link">View details</a>
+            </div>
+
+          </li>
+        <% }) %>
+      </ul>
+
+    <% } %>
+  </main>
+
+</body>
+</html>

@@ -32,7 +32,7 @@
         <% if (addresses.length === 0) { %>
           <div class="no-address">
             <p>You haven't added an address yet.</p>
-            <a href="/amazon-clone/enterAddress/<%= user._id %>" class="btn-primary">Add an address</a>
+            <a href="/amazon-clone/enterAddress/<%= user._id %>?from=checkout&items=<%= items.map(i => i.listing._id).join(',') %>" class="btn-primary">Add an address</a>
           </div>
         <% } else { %>
           <div class="address-list">
@@ -48,7 +48,7 @@
               </label>
             <% }) %>
           </div>
-          <a href="/amazon-clone/enterAddress/<%= user._id %>" class="add-address-link">+ Add a new address</a>
+          <a href="/amazon-clone/enterAddress/<%= user._id %>?from=checkout&items=<%= items.map(i => i.listing._id).join(',') %>" class="add-address-link">+ Add a new address</a>
         <% } %>
       </section>
 

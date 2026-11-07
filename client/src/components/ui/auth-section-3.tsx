@@ -18,11 +18,13 @@ export default function AuthSection({
   error,
   userId,
   from,
+  items,
 }: {
   mode: Mode;
   error?: string;
   userId?: string;
   from?: string;
+  items?: string;
 }) {
   const isLogin = mode === "login";
   const isAddress = mode === "address";
@@ -62,6 +64,8 @@ export default function AuthSection({
                 <>
                   {/* tells the server where to send the user after saving */}
                   {from && <input type="hidden" name="from" value={from} />}
+                  {/* checkout mode: which cart items to go back to */}
+                  {items && <input type="hidden" name="items" value={items} />}
                   <InputField
                     label="Address label"
                     name="label"

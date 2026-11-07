@@ -7,6 +7,7 @@ const {setUser} = require('../services/auth');
 const Listing = require('../model/listing');
 const {getUser} = require('../services/auth');
 const User = require('../model/user');
+const Order = require('../model/order');
 const MAX_ATTEMPTS = 5;
 // const Product = require('../model/product');
 
@@ -37,6 +38,8 @@ async function createUser(req, res){
 async function enterAddress(req, res){
     const { label, street, city , state, postalCode, country} = req.body;
     const { userId } = req.params;
+    // checkout mode sends the selected cart item ids along; keep only valid-looking ids
+    const checkoutItems = (req.body.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',');
     try{
         const loggedInUser = await user.findById(userId);
         loggedInUser.addresses.push({label, street, city, state, postalCode, country});
@@ -44,10 +47,14 @@ async function enterAddress(req, res){
         if(req.body.from === 'addresses'){
             return res.redirect('/amazon-clone/addresses');
         }
+        if(req.body.from === 'checkout' && checkoutItems){
+            return res.redirect(`/amazon-clone/checkout?items=${checkoutItems}`); // back to the same checkout
+        }
         return res.redirect('/amazon-clone');
     }catch(err){
         console.log(err);
-        return res.render('address', { userId, from: req.body.from === 'addresses' ? 'addresses' : '', error: "Something went wrong, please try again" });
+        const from = ['addresses', 'checkout'].includes(req.body.from) ? req.body.from : '';
+        return res.render('address', { userId, from, items: checkoutItems, error: "Something went wrong, please try again" });
     }
 }
 
@@ -449,9 +456,113 @@ async function addToCart(req, res){
     }
 }
 
+async function placeOrder(req, res){
+    // reserved = listings whose stock we already reduced, so we can give it back if something fails later
+    const reserved = [];
+    const giveBackStock = () => Promise.all(
+        reserved.map(r => Listing.updateOne({ _id: r.id }, { $inc: { stock: r.qty } }))
+    );
+
+    try{
+        const ids = (req.body.items || '').split(',').filter(Boolean); // same comma list the checkout form sends
+        const {addressId} = req.body;
+        if(ids.length === 0) return res.redirect('/amazon-clone/cart');
+
+        const dbUser = await User.findById(req.user._id).populate({
+            path: 'cart.listing',
+            populate: { path: 'product', select: 'name images' }
+        });
+        if(!dbUser) return res.redirect('/amazon-clone/login');
+
+        // only order what is really in this user's cart (never trust ids/prices coming from the form)
+        const cartItems = dbUser.cart.filter(item =>
+            item.listing && ids.includes(item.listing._id.toString())
+        );
+        if(cartItems.length === 0) return res.redirect('/amazon-clone/cart');
+
+        const address = dbUser.addresses.id(addressId); // only the user's own addresses can match
+        if(!address) return res.status(400).send('Please choose a valid delivery address');
+
+        // 1. check stock before touching anything
+        for(const item of cartItems){
+            const l = item.listing;
+            if(l.status !== 'active' || l.stock < item.quantity){
+                return res.status(400).send(`Sorry, only ${l.stock} left of ${l.product ? l.product.name : 'an item'}. Please update your cart.`);
+            }
+        }
+
+        // 2. reduce stock. The {stock: {$gte: qty}} filter means the update only happens if enough stock
+        //    is still there at this exact moment, so two buyers can never push stock below 0
+        for(const item of cartItems){
+            const result = await Listing.updateOne(
+                { _id: item.listing._id, status: 'active', stock: { $gte: item.quantity } },
+                { $inc: { stock: -item.quantity } } // $gte means greater than equal to
+            );
+            if(result.modifiedCount === 0){ // result is how many documents mongoDb changed , 0 means item sold out , went inactive or something else happened so in that case return back the stock
+                await giveBackStock();
+                return res.status(400).send('One of the items just went out of stock. Please check your cart again.');
+            }
+            reserved.push({ id: item.listing._id, qty: item.quantity }); // pushing in reserved array
+        }
+
+        // 3. snapshot the items with today's price
+        const items = cartItems.map(item => ({
+            listing: item.listing._id,
+            product: item.listing.product._id,
+            name: item.listing.product.name,
+            image: item.listing.product.images && item.listing.product.images[0],
+            price: item.listing.price,
+            quantity: item.quantity
+        }));
+        const totalAmount = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+
+        let newOrder;
+        try{
+            newOrder = await Order.create({
+                orderID: Order.generateOrderID(),
+                user: dbUser._id,
+                name: dbUser.name,
+                email: dbUser.email,
+                phone: dbUser.contact,
+                shippingAddress: {
+                    label: address.label,
+                    street: address.street,
+                    city: address.city,
+                    state: address.state,
+                    postalCode: address.postalCode,
+                    country: address.country
+                },
+                items,
+                totalAmount
+            });
+        }catch(err){
+            await giveBackStock(); // order wasn't saved, so put the stock back
+            throw err;
+        }
+
+        // 4. listings that just hit 0 stock are marked out of stock
+        await Listing.updateMany(
+            { _id: { $in: reserved.map(r => r.id) }, stock: 0 },
+            { $set: { status: 'out_of_stock' } }
+        );
+
+        // 5. remove only the ordered items from the cart
+        dbUser.cart = dbUser.cart.filter(item =>
+            !(item.listing && ids.includes(item.listing._id.toString()))
+        );
+        await dbUser.save();
+
+        return res.redirect(`/amazon-clone/order/${newOrder.orderID}`);
+    }catch(err){
+        console.log(err);
+        return res.status(500).send('Something went wrong while placing your order');
+    }
+}
+
 // Now since the listing only stores the reference id of the product in the form of string , so to fetch the actual product in items collection you need to write .populate , same logic for seller. From seller we fetch the storeName and rating , limit(20) caps the query to return only atmax 20 documents so that it does not causes delay in the system while fetching. We will pair it with .skip later and move to page 1, 2 etc
 
 module.exports = {
+    placeOrder,
     createUser,
     enterAddress,
     handleLogin,

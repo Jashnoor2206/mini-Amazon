@@ -14,6 +14,7 @@ createRoot(root).render(
       error={root.dataset.error || undefined}
       userId={root.dataset.userId || undefined}
       from={root.dataset.from || undefined}
+      items={root.dataset.items || undefined}
     />
   </StrictMode>
 );
