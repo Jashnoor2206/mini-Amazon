@@ -117,8 +117,10 @@
                 data-product-name="<%= product.name %>"
                 <%= available ? '' : 'disabled' %>>Add to cart</button>
 
+                <!-- here wishlisted is not a html attribute it is a server side ejs variable and data- variables are actually that are html attributes, it comes from our controller so we have to handle it differently in js file. Anything between <%= %> runs on server before the page is sent so class becomes "wishlist-btn active" or "wishlist-btn ". Note that class name never actually changes a new class gets added on the top . Everything we write with spaces is a new class added on top. You can always select the button by writing 'wishlist-btn' in the query.selector   -->
         <button type="button"
                 class="wishlist-btn <%= wishlisted ? 'active' : '' %>"
+                aria-pressed="<%= wishlisted %>"
                 data-listing-id="<%= listing._id %>"
                 data-product-name="<%= product.name %>">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>

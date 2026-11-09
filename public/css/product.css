@@ -64,10 +64,21 @@ svg.icon { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-w
 .btn-main:disabled, .btn-small:disabled { background: rgba(35, 40, 38, 0.15); color: rgba(35, 40, 38, 0.45); cursor: not-allowed; }
 
 /* wishlist button (product page version) */
-.buy-box .wishlist-btn { margin-top: 10px; width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; background: none; border: 1px solid var(--olive); border-radius: 8px; font-size: 14px; color: var(--slate); cursor: pointer; transition: color 0.2s, border-color 0.2s; }
+.buy-box .wishlist-btn { margin-top: 10px; width: 100%; height: 42px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #fff; border: 1px solid var(--olive); border-radius: 8px; font-size: 14px; color: var(--slate); cursor: pointer; transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
 .buy-box .wishlist-btn:hover { color: #9b3d3d; border-color: #9b3d3d; }
-.buy-box .wishlist-btn.active { color: #9b3d3d; border-color: #9b3d3d; }
+.buy-box .wishlist-btn:disabled { opacity: 0.7; cursor: wait; }
+/* wishlisted: whole button turns red with white text and a filled heart */
+.buy-box .wishlist-btn.active { background: #9b3d3d; color: #fff; border-color: #9b3d3d; }
+.buy-box .wishlist-btn.active:hover { background: #853232; color: #fff; }
+.buy-box .wishlist-btn svg { transition: fill 0.3s ease; }
 .buy-box .wishlist-btn.active svg { fill: currentColor; }
+/* on the product page only the heart pops, not the whole wide button */
+.buy-box .wishlist-btn.bump { animation: none; }
+.buy-box .wishlist-btn.bump svg { animation: heart-bump 0.4s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .buy-box .wishlist-btn, .buy-box .wishlist-btn svg { transition: none; }
+  .buy-box .wishlist-btn.bump svg { animation: none; }
+}
 
 /* other sellers */
 .offers { margin-top: 40px; }

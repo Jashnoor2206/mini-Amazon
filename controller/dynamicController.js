@@ -448,7 +448,8 @@ async function addToCart(req, res){
             dbUser.cart.push({listing : listingID, quantity : 1});
         }
         await dbUser.save();
-        return res.json({cartCount : dbUser.cart.length});
+        const quantity = existingProduct ? existingProduct.quantity : 1; // how many of this item are in the cart now
+        return res.json({cartCount : dbUser.cart.length, quantity});
 
     }catch(err){
         console.log(err);
