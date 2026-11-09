@@ -81,7 +81,7 @@ async function cartPage(req, res){
 
     const items = dbUser.cart.filter(item => item.listing); // skip deleted listings
     const total = items.reduce((sum, item) => sum + item.listing.price * item.quantity, 0);
-
+    res.set('Cache-Control', 'no-store'); // res.set(name , value) adds a header to that response . A header is small note sent along with html that user never sees . Cache-control header tells browser whether to save the state of page or not . 'no-store' tells browser not to store the state of the page , reload the page everytime on forward and backward button . It has to come before render because render sends a response and no header comes after response
     res.render('cart', { user: dbUser, items, total });
 }
 

@@ -2,7 +2,7 @@ const incrementBtns = document.querySelectorAll('[data-cart-action="inc"]');
 const decrementBtns = document.querySelectorAll('[data-cart-action="dec"]');
 const formatINR = n => '₹' + n.toLocaleString('en-IN');
 const removeBtns = document.querySelectorAll('.remove-btn');
-const checkoutBtn = document.querySelector('.btn-primary');
+const checkoutBtn = document.getElementById('checkout-btn');
 
 
 function updateSummary() {
@@ -32,7 +32,27 @@ document.querySelectorAll('.select-item').forEach(cb => {
     cb.addEventListener('change', updateSummary);
 });
 
-checkoutBtn.addEventListener('click', (e) => {
+// Start with every item unticked. Browsers (Firefox on reload, and any browser when
+// you come back with the Back button) restore a checkbox's previous state, which made
+// items look pre-selected even though the HTML has no `checked` attribute.
+function resetSelection() { // it resets the checkbox buttons
+    document.querySelectorAll('.select-item').forEach(cb => { cb.checked = false; });
+    if (checkoutBtn) updateSummary();
+}
+resetSelection();
+window.addEventListener('pageshow', (e) => {
+    const nav = performance.getEntriesByType('navigation')[0];
+    if (e.persisted || (nav && nav.type === 'back_forward')) location.reload();
+}); // 'pageshow' means that when page is shown do this event which is listed next to it . performance is built in broswer object that records how the page was loaded . Everytime page opens browser writes down a visit record for something like :
+// { type: 'back_forward', name: 'http://localhost/amazon-clone/cart', ... }
+// type says how you arrived , line 44 reads this record and line 45 decided from it whether to reload 
+// performance is a built-in object, like document or window. It’s the browser’s notebook of timing records for this page: when the page started loading, when each image and script loaded, and so on.
+// 'navigation' is the type we ask for. A navigation record is the record of how the page itself was opened. Other types exist too, like 'resource' (one record per image, CSS or JS file), but we only care about the page visit. It’s a fixed built-in word, just like 'click' or 'pageshow'. The function always returns an array, even though a page has only one navigation record. So the result looks like [ { type: 'back_forward', ... } ]. [0] takes the first (and only) item out of the array, so we get the record object itself. const nav = ... stores that record in a variable called nav. nav is just a name I picked, short for navigation.
+// e.persisted asks: “was this page restored from the frozen snapshot?” true or false. nav && nav.type === 'back_forward' asks: “does the record exist, and did the user arrive with Back or Forward?” The nav && part is only a safety check so we never read .type from something empty. || means OR: if either answer is true, run location.reload(), which refreshes the page from the server.
+
+//In plain English: “If this page is an old copy, either a frozen snapshot or opened with the Back/Forward arrows, refresh it so the cart shows the real data.”
+
+if (checkoutBtn) checkoutBtn.addEventListener('click', (e) => { // when cart is empty ejs page does not render the checkout button so it will return null state and rest of the code wont run below it , it is a safeguard
     console.log('checkout button clicked');
     updateSummary(); // refresh the href one last time before the browser follows it
 

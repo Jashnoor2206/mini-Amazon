@@ -88,3 +88,6 @@ wishlistBtns.forEach(btn =>{
         }
     })
 })
+window.addEventListener('pageshow', (e) => {
+    if (e.persisted) location.reload();
+});
