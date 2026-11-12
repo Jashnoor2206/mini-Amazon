@@ -9,13 +9,13 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-async function sendOTP(to, otp){
+async function sendOTP(to, otp, minutes){
     await transporter.sendMail({
         from : `"Node"<${process.env.EMAIL_USER}>`,
         to,
         subject : 'Password Reset OTP',
-        text : `Your code is ${otp} , it expires in 10 minutes . If you did not ask for this please ignore`,
-        html: `<p>Your password reset code is</p><h2 style="letter-spacing:4px">${otp}</h2><p>It expires in 10 minutes.</p>`
+        text : `Your code is ${otp} , it expires in ${minutes} minutes . If you did not ask for this please ignore`,
+        html: `<p>Your password reset code is</p><h2 style="letter-spacing:4px">${otp}</h2><p>It expires in ${minutes} minutes.</p>`
     });
 }
 

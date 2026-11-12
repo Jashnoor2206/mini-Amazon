@@ -9,16 +9,20 @@ const {getUser} = require('../services/auth');
 const User = require('../model/user');
 const Order = require('../model/order');
 const MAX_ATTEMPTS = 5;
+const MIN_PASSWORD_LEN = 6;
+const BCRYPT_ROUNDS = 10;
+const OTP_LIFETIME_MS = 10*60*1000; // otp lifetime of 10 minutes or 600000 milliseconds
+const OTP_COOLDOWN_MS = 60*1000; // resend otp cooldown of 60 seconds or 60000 ms
 // const Product = require('../model/product');
 
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
-    if(!password || password.length < 6){
+    if(!password || password.length < MIN_PASSWORD_LEN){
         res.render('signup', {error : "Password must be atleast 6 characters long"});
     }
     let newUser;
     try{
-        const hashedPassword = await bcrypt.hash(password, 10);
+        const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
         newUser = await user.create({
             name: name,
             email: email,
@@ -91,24 +95,24 @@ async function handleForgotPassword(req, res){
         const existingUser = await user.findOne({ email });
         // only send otp when user exists and either they have been never sent a code or last otp was sent 60s ago
         const canSend = existingUser &&
-            (!existingUser.resetOtpSentAt || Date.now() - existingUser.resetOtpSentAt.getTime() > 60 * 1000);
+            (!existingUser.resetOtpSentAt || Date.now() - existingUser.resetOtpSentAt.getTime() > OTP_COOLDOWN_MS);
 
         if(canSend){
             const otp = crypto.randomInt(100000, 1000000).toString(); // always 6 digits
-            existingUser.resetOtpHash = await bcrypt.hash(otp, 10); // saves hash value of otp
-            existingUser.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000); // saves date of when otp will be expired
+            existingUser.resetOtpHash = await bcrypt.hash(otp, BCRYPT_ROUNDS); // saves hash value of otp
+            existingUser.resetOtpExpires = new Date(Date.now() + OTP_LIFETIME_MS); // saves date of when otp will be expired
             existingUser.resetOtpAttempts = 0; // saves attempts
             existingUser.resetOtpSentAt = new Date(); // saves current date
             await existingUser.save(); // saves everything to database
-            await sendOTP(email, otp); // sends otp
+            await sendOTP(email, otp, OTP_LIFETIME_MS / 60000); // sends otp
         }
 
         // next page needs to know which email the code was sent to , it puts email, stage: 'otp' and it is http only so javascript cannot read it , it will expire after 10 minutes as mentioned in the maxAge
         const token = jwt.sign(
             { email, stage: 'otp' }, 
-            process.env.SECRET, { expiresIn: '10m' }
+            process.env.SECRET, { expiresIn: OTP_LIFETIME_MS / 1000 }
         );
-        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: OTP_LIFETIME_MS });
         return res.redirect('/amazon-clone/verify-otp');
     }catch(err){
         console.log(err);
@@ -134,27 +138,27 @@ async function handleResendOtp(req, res){
 
         // 2. same 60-second cooldown as /forgot-password
         const canSend = existingUser &&
-            (!existingUser.resetOtpSentAt || Date.now() - existingUser.resetOtpSentAt.getTime() > 60 * 1000);
+            (!existingUser.resetOtpSentAt || Date.now() - existingUser.resetOtpSentAt.getTime() > OTP_COOLDOWN_MS);
 
         if(canSend){
             // 3. brand new code: replaces the old one and resets the attempt counter
             const otp = crypto.randomInt(100000, 1000000).toString();
-            existingUser.resetOtpHash = await bcrypt.hash(otp, 10);
-            existingUser.resetOtpExpires = new Date(Date.now() + 10 * 60 * 1000);
+            existingUser.resetOtpHash = await bcrypt.hash(otp, BCRYPT_ROUNDS);
+            existingUser.resetOtpExpires = new Date(Date.now() + OTP_LIFETIME_MS);
             existingUser.resetOtpAttempts = 0;
             existingUser.resetOtpSentAt = new Date();
             await existingUser.save();
-            await sendOTP(email, otp);
+            await sendOTP(email, otp, OTP_LIFETIME_MS / 60000);
         }
 
         // 4. give the cookie a fresh 10 minutes to match the new code
-        const token = jwt.sign({ email, stage: 'otp' }, process.env.SECRET, { expiresIn: '10m' });
-        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+        const token = jwt.sign({ email, stage: 'otp' }, process.env.SECRET, { expiresIn: OTP_LIFETIME_MS / 1000 });
+        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: OTP_LIFETIME_MS });
 
         // 5. one message for every case, so nothing is revealed
         return res.render('verifyOtp', {
             email,
-            message: 'If this email is registered, a new code has been sent. You can request another after 60 seconds.'
+            message: 'If this email is registered, a new code has been sent. You can request another after ' + (OTP_COOLDOWN_MS / 1000) + ' seconds.'
         });
     }catch(err){
         console.log(err);
@@ -218,8 +222,8 @@ async function handleVerifyOtp(req, res){
         await existingUser.save();
 
         // 7. upgrade the cookie so /reset-password will open
-        const token = jwt.sign({ userId: existingUser._id, stage: 'reset' }, process.env.SECRET, { expiresIn: '10m' });
-        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: 10 * 60 * 1000 });
+        const token = jwt.sign({ userId: existingUser._id, stage: 'reset' }, process.env.SECRET, { expiresIn: OTP_LIFETIME_MS / 1000 });
+        res.cookie('pwreset', token, { httpOnly: true, sameSite: 'lax', maxAge: OTP_LIFETIME_MS });
         return res.redirect('/amazon-clone/reset-password');
     }catch(err){
         console.log(err);
@@ -240,7 +244,7 @@ async function resetPassword(req, res){
 
     // 2. validate on the server too (browser checks can be bypassed)
     const { password, confirmPassword } = req.body;
-    if(!password || password.length < 6){
+    if(!password || password.length < MIN_PASSWORD_LEN){
         return res.render('resetPassword', { error: 'Password must be at least 6 characters long' });
     }
     if(password !== confirmPassword){
@@ -255,7 +259,7 @@ async function resetPassword(req, res){
         }
 
         // 3. save the new hashed password and wipe any leftover OTP data
-        existingUser.password = await bcrypt.hash(password, 10);
+        existingUser.password = await bcrypt.hash(password, BCRYPT_ROUNDS);
         existingUser.resetOtpHash = null;
         existingUser.resetOtpExpires = null;
         existingUser.resetOtpAttempts = 0;

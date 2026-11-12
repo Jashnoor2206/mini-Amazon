@@ -1,6 +1,9 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const secret = process.env.SECRET;
+if(!secret){
+    throw new Error('SECRET is missing in .env file ');
+} // adding a safeguard , if secret is missing it shows on terminal and stops the server
 
 function setUser(user){
     const payload = {
