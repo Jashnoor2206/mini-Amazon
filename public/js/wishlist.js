@@ -45,13 +45,14 @@ wishlistBtns.forEach(btn =>{
 removeBtns.forEach(btn =>{
     btn.addEventListener('click', async() =>{
         const listingId = btn.dataset.listingId;
+        const productId = btn.dataset.productId;
         btn.disabled = true;
 
         try{
             const res = await fetch('/user/wishlist/remove', {
                 method : 'PATCH',
                 headers : {'Content-Type' : 'application/json'},
-                body : JSON.stringify({listingId})
+                body : JSON.stringify({listingId, productId})
             })
             if(!res.ok){
                 showToast('Something went wrong' , 'error ', 2000);

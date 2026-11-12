@@ -18,7 +18,8 @@ const OTP_COOLDOWN_MS = 60*1000; // resend otp cooldown of 60 seconds or 60000 m
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
     if(!password || password.length < MIN_PASSWORD_LEN){
-        res.render('signup', {error : "Password must be atleast 6 characters long"});
+        return res.render('signup', {error : "Password must be atleast 6 characters long"});
+        // returning after invalid password
     }
     let newUser;
     try{
@@ -64,8 +65,14 @@ async function enterAddress(req, res){
 
 async function handleLogin(req, res){
     try{
-        const {email, password} = req.body;
-        const existingUser = await user.findOne({ email: email.trim().toLowerCase() });
+        const email = (req.body.email || '').trim().toLowerCase();
+        const password = req.body.password || '';
+        if(!email || !password){
+            return res.render('login', {
+                error : 'Please enter a valid email or password'
+            });
+        }
+        const existingUser = await user.findOne({ email: email });
         if(!existingUser){
             return res.render('login',{
                 error: "Invalid Username or Password"
@@ -400,12 +407,19 @@ async function addToWishlist(req, res){
 }
 
 async function removeFromWishlist(req, res){
-    const {listingId} = req.body;
+    const {listingId, productId} = req.body;
+    let prodID = productId;
     try{
-        const listing = await Listing.findById(listingId);
+        if(!prodID){
+            const listing = await Listing.findById(listingId);
+            if(!listing){
+                return res.status(400).json({error : 'Item not available'});
+            }
+            prodID = listing.product.toString();
+        }
         const dbUser = await User.findById(req.user._id);
 
-        dbUser.wishlist = dbUser.wishlist.filter(id => id.toString() !== listing.product.toString());
+        dbUser.wishlist = dbUser.wishlist.filter(id => id.toString() !== prodID);
         await dbUser.save();
         return res.status(200).json({wishlisted : false});
     }catch(err){
