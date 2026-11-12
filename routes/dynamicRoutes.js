@@ -38,7 +38,7 @@ router.post('/reset-password', resetPassword);
 
 
 // ==================== Addresses (views: address.ejs, addressList.ejs) ====================
-router.post('/addressPage/:userId', enterAddress);
+router.post('/addressPage', restrictToLoggedInUser, enterAddress);
 router.delete('/address/:addressId', requireLoginApi, removeAddress);
 
 

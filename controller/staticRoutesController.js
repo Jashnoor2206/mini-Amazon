@@ -58,13 +58,13 @@ function resetPasswordPage(req, res){
 // ==================== Addresses (views: address.ejs, addressList.ejs) ====================
 
 function addressPage(req, res){
-    const {userId} = req.params;
+    // const {userId} = req.params;
     const from = ['addresses', 'checkout'].includes(req.query.from) ? req.query.from : ''; // only allow known values
     // for checkout mode, keep only valid-looking Mongo ids (24 hex chars) so nothing odd ends up in the page
     const items = from === 'checkout'
         ? (req.query.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',')
         : '';
-    res.render('address', {userId, from, items});
+    res.render('address', {from, items});
 }
 
 async function addressListPage(req, res){

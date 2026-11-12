@@ -44,7 +44,7 @@ router.get('/reset-password', resetPasswordPage);
 
 
 // ==================== Addresses (views: address.ejs, addressList.ejs) ====================
-router.get('/enterAddress/:userId', addressPage);
+router.get('/enterAddress',restrictToLoggedInUser, addressPage);
 router.get('/addresses', restrictToLoggedInUser, addressListPage);
 
 

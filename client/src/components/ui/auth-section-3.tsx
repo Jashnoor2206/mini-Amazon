@@ -16,13 +16,11 @@ const quotes: Record<Mode, string> = {
 export default function AuthSection({
   mode,
   error,
-  userId,
   from,
   items,
 }: {
   mode: Mode;
   error?: string;
-  userId?: string;
   from?: string;
   items?: string;
 }) {
@@ -36,7 +34,7 @@ export default function AuthSection({
       : "Create an account";
 
   const action = isAddress
-    ? `/user/addressPage/${userId}`
+    ? "/user/addressPage"
     : isLogin
       ? "/user/login"
       : "/user/createUser";

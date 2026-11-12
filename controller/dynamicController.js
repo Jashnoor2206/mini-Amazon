@@ -41,7 +41,7 @@ async function createUser(req, res){
     }
     const token = setUser(newUser);
     res.cookie("uuid", token);
-    return res.redirect(`/amazon-clone/enterAddress/${newUser._id}`);
+    return res.redirect('/amazon-clone/enterAddress');
 }
 
 async function handleLogin(req, res){
@@ -281,11 +281,11 @@ async function resetPassword(req, res){
 
 async function enterAddress(req, res){
     const { label, street, city , state, postalCode, country} = req.body;
-    const { userId } = req.params;
     // checkout mode sends the selected cart item ids along; keep only valid-looking ids
     const checkoutItems = (req.body.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',');
     try{
-        const loggedInUser = await user.findById(userId);
+        const loggedInUser = await user.findById(req.user._id); // always the logged in user, never an id from the URL
+        if(!loggedInUser) return res.redirect('/amazon-clone/login');
         loggedInUser.addresses.push({label, street, city, state, postalCode, country});
         await loggedInUser.save();
         if(req.body.from === 'addresses'){
@@ -298,7 +298,7 @@ async function enterAddress(req, res){
     }catch(err){
         console.log(err);
         const from = ['addresses', 'checkout'].includes(req.body.from) ? req.body.from : '';
-        return res.render('address', { userId, from, items: checkoutItems, error: "Something went wrong, please try again" });
+        return res.render('address', { from, items: checkoutItems, error: "Something went wrong, please try again" });
     }
 }
 
