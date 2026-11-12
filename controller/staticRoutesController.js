@@ -8,24 +8,25 @@ require('../model/product');
 require('../model/seller');
 
 
+
+// ==================== Signup and Login (signup page is served by the React app in client/dist; view: login.ejs) ====================
+
 function signupPage(req, res){
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 }
-function addressPage(req, res){
-    const {userId} = req.params;
-    const from = ['addresses', 'checkout'].includes(req.query.from) ? req.query.from : ''; // only allow known values
-    // for checkout mode, keep only valid-looking Mongo ids (24 hex chars) so nothing odd ends up in the page
-    const items = from === 'checkout'
-        ? (req.query.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',')
-        : '';
-    res.render('address', {userId, from, items});
-}
+
 function loginPage(req, res){
     res.render('login');
 }
+
+
+
+// ==================== Forgot password flow (views: forgotPassword.ejs, verifyOtp.ejs, resetPassword.ejs) ====================
+
 function forgotPassword(req, res){
     res.render('forgotPassword');
 }
+
 function verifyOtp(req, res){ // this controller verifies the cookie only so that user can go to verifyOtp ejs page
     try{
         const data = jwt.verify(
@@ -41,6 +42,7 @@ function verifyOtp(req, res){ // this controller verifies the cookie only so tha
         return res.redirect('/amazon-clone/forgot-password');
     }
 }
+
 function resetPasswordPage(req, res){
     try{
         const data = jwt.verify(req.cookies.pwreset, process.env.SECRET);
@@ -50,16 +52,21 @@ function resetPasswordPage(req, res){
         return res.redirect('/amazon-clone/forgot-password');
     }
 }
-async function editProfile(req, res){
-    try{
-        const dbUser = await User.findById(req.user._id);
-        if(!dbUser) return res.redirect('/amazon-clone/login');
-        res.render('editProfile', { user: dbUser });
-    }catch(err){
-        console.log(err);
-        res.status(500).send('Something went wrong while loading your profile');
-    }
+
+
+
+// ==================== Addresses (views: address.ejs, addressList.ejs) ====================
+
+function addressPage(req, res){
+    const {userId} = req.params;
+    const from = ['addresses', 'checkout'].includes(req.query.from) ? req.query.from : ''; // only allow known values
+    // for checkout mode, keep only valid-looking Mongo ids (24 hex chars) so nothing odd ends up in the page
+    const items = from === 'checkout'
+        ? (req.query.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',')
+        : '';
+    res.render('address', {userId, from, items});
 }
+
 async function addressListPage(req, res){
     try{
         const dbUser = await User.findById(req.user._id);
@@ -70,82 +77,25 @@ async function addressListPage(req, res){
         res.status(500).send('Something went wrong while loading addresses');
     }
 }
-async function cartPage(req, res){
-    const dbUser = await User.findById(req.user._id).populate({
-        path: 'cart.listing',
-        populate: [
-            { path: 'product', select: 'name images' },
-            { path: 'seller', select: 'storeName' }
-        ]
-    });
 
-    const items = dbUser.cart.filter(item => item.listing); // skip deleted listings
-    const total = items.reduce((sum, item) => sum + item.listing.price * item.quantity, 0);
-    res.set('Cache-Control', 'no-store'); // res.set(name , value) adds a header to that response . A header is small note sent along with html that user never sees . Cache-control header tells browser whether to save the state of page or not . 'no-store' tells browser not to store the state of the page , reload the page everytime on forward and backward button . It has to come before render because render sends a response and no header comes after response
-    res.render('cart', { user: dbUser, items, total });
-}
 
-async function checkoutPage(req, res){
+
+// ==================== Profile (view: editProfile.ejs) ====================
+
+async function editProfile(req, res){
     try{
-        const ids = (req.query.items || '').split(',').filter(Boolean); // turns string back into the array 
-        if(ids.length === 0) return res.redirect('/amazon-clone/cart');
-
-        const dbUser = await User.findById(req.user._id).populate({
-            path: 'cart.listing',
-            populate: [
-                { path: 'product', select: 'name images' },
-                { path: 'seller', select: 'storeName' }
-            ]
-        });
-        
-        const items = dbUser.cart.filter(item =>
-            item.listing && ids.includes(item.listing._id.toString())
-        );
-        if(items.length === 0) return res.redirect('/amazon-clone/cart');
-
-        const total = items.reduce((sum, item) => sum + item.listing.price * item.quantity, 0);
-
-        res.render('checkout', { user: dbUser, items, total, addresses: dbUser.addresses });
+        const dbUser = await User.findById(req.user._id);
+        if(!dbUser) return res.redirect('/amazon-clone/login');
+        res.render('editProfile', { user: dbUser });
     }catch(err){
         console.log(err);
-        res.status(500).send('Something went wrong while loading checkout');
+        res.status(500).send('Something went wrong while loading your profile');
     }
 }
 
-async function wishlistPage(req, res){
-    try{
-        const dbUser = await User.findById(req.user._id).populate({
-            path: 'wishlist',
-            select: 'name images'
-        });
 
-        const products = dbUser.wishlist.filter(p => p); // skip deleted products
 
-        // find purchasable listings for all wishlisted products in ONE query
-        const listings = await Listing.find({
-            product: { $in: products.map(p => p._id) },
-            status: 'active',
-            stock: { $gt: 0 }
-        }).sort({ price: 1 }); // cheapest first
-
-        // keep only the cheapest listing per product
-        const listingByProduct = {};
-        listings.forEach(l => {
-            const key = l.product.toString();
-            if(!listingByProduct[key]) listingByProduct[key] = l;
-        });
-
-        const items = products.map(p => ({
-            product: p,
-            listingId: listingByProduct[p._id.toString()]?._id || null
-        }));
-
-        res.render('wishlist', { user: dbUser, items });
-    }catch(err){
-        console.log(err);
-        res.status(500).send('Something went wrong while loading wishlist');
-    }
-}
+// ==================== Product page (view: product.ejs) ====================
 
 async function productPage(req, res){
     try{
@@ -194,15 +144,98 @@ async function productPage(req, res){
     }
 }
 
-async function getOrders(req, res){
+
+
+// ==================== Cart (view: cart.ejs) ====================
+
+async function cartPage(req, res){
+    const dbUser = await User.findById(req.user._id).populate({
+        path: 'cart.listing',
+        populate: [
+            { path: 'product', select: 'name images' },
+            { path: 'seller', select: 'storeName' }
+        ]
+    });
+
+    const items = dbUser.cart.filter(item => item.listing); // skip deleted listings
+    const total = items.reduce((sum, item) => sum + item.listing.price * item.quantity, 0);
+    res.set('Cache-Control', 'no-store'); // res.set(name , value) adds a header to that response . A header is small note sent along with html that user never sees . Cache-control header tells browser whether to save the state of page or not . 'no-store' tells browser not to store the state of the page , reload the page everytime on forward and backward button . It has to come before render because render sends a response and no header comes after response
+    res.render('cart', { user: dbUser, items, total });
+}
+
+
+
+// ==================== Wishlist (view: wishlist.ejs) ====================
+
+async function wishlistPage(req, res){
     try{
-        const orders = await Order.find({user : req.user._id}).sort({createdAt:-1});
-        res.render('myOrders', {orders});
+        const dbUser = await User.findById(req.user._id).populate({
+            path: 'wishlist',
+            select: 'name images'
+        });
+
+        const products = dbUser.wishlist.filter(p => p); // skip deleted products
+
+        // find purchasable listings for all wishlisted products in ONE query
+        const listings = await Listing.find({
+            product: { $in: products.map(p => p._id) },
+            status: 'active',
+            stock: { $gt: 0 }
+        }).sort({ price: 1 }); // cheapest first
+
+        // keep only the cheapest listing per product
+        const listingByProduct = {};
+        listings.forEach(l => {
+            const key = l.product.toString();
+            if(!listingByProduct[key]) listingByProduct[key] = l;
+        });
+
+        const items = products.map(p => ({
+            product: p,
+            listingId: listingByProduct[p._id.toString()]?._id || null
+        }));
+
+        res.render('wishlist', { user: dbUser, items });
     }catch(err){
         console.log(err);
-        res.redirect('/amazon-clone');
+        res.status(500).send('Something went wrong while loading wishlist');
     }
 }
+
+
+
+// ==================== Checkout (view: checkout.ejs) ====================
+
+async function checkoutPage(req, res){
+    try{
+        const ids = (req.query.items || '').split(',').filter(Boolean); // turns string back into the array 
+        if(ids.length === 0) return res.redirect('/amazon-clone/cart');
+
+        const dbUser = await User.findById(req.user._id).populate({
+            path: 'cart.listing',
+            populate: [
+                { path: 'product', select: 'name images' },
+                { path: 'seller', select: 'storeName' }
+            ]
+        });
+        
+        const items = dbUser.cart.filter(item =>
+            item.listing && ids.includes(item.listing._id.toString())
+        );
+        if(items.length === 0) return res.redirect('/amazon-clone/cart');
+
+        const total = items.reduce((sum, item) => sum + item.listing.price * item.quantity, 0);
+
+        res.render('checkout', { user: dbUser, items, total, addresses: dbUser.addresses });
+    }catch(err){
+        console.log(err);
+        res.status(500).send('Something went wrong while loading checkout');
+    }
+}
+
+
+
+// ==================== Orders (views: orderConfirmation.ejs, myOrders.ejs) ====================
 
 async function orderConfirmationPage(req, res){
     try{
@@ -216,6 +249,18 @@ async function orderConfirmationPage(req, res){
         res.status(500).send('Something went wrong while loading your order');
     }
 }
+
+async function getOrders(req, res){
+    try{
+        const orders = await Order.find({user : req.user._id}).sort({createdAt:-1});
+        res.render('myOrders', {orders});
+    }catch(err){
+        console.log(err);
+        res.redirect('/amazon-clone');
+    }
+}
+
+
 
 module.exports = {
     orderConfirmationPage,

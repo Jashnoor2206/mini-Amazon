@@ -15,6 +15,10 @@ const OTP_LIFETIME_MS = 10*60*1000; // otp lifetime of 10 minutes or 600000 mill
 const OTP_COOLDOWN_MS = 60*1000; // resend otp cooldown of 60 seconds or 60000 ms
 // const Product = require('../model/product');
 
+
+
+// ==================== Signup, Login and Logout (views: signup.ejs, login.ejs; logout button is on profile.ejs) ====================
+
 async function createUser(req, res){
     const{ name, email, password, contact } = req.body;
     if(!password || password.length < MIN_PASSWORD_LEN){
@@ -38,29 +42,6 @@ async function createUser(req, res){
     const token = setUser(newUser);
     res.cookie("uuid", token);
     return res.redirect(`/amazon-clone/enterAddress/${newUser._id}`);
-}
-
-async function enterAddress(req, res){
-    const { label, street, city , state, postalCode, country} = req.body;
-    const { userId } = req.params;
-    // checkout mode sends the selected cart item ids along; keep only valid-looking ids
-    const checkoutItems = (req.body.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',');
-    try{
-        const loggedInUser = await user.findById(userId);
-        loggedInUser.addresses.push({label, street, city, state, postalCode, country});
-        await loggedInUser.save();
-        if(req.body.from === 'addresses'){
-            return res.redirect('/amazon-clone/addresses');
-        }
-        if(req.body.from === 'checkout' && checkoutItems){
-            return res.redirect(`/amazon-clone/checkout?items=${checkoutItems}`); // back to the same checkout
-        }
-        return res.redirect('/amazon-clone');
-    }catch(err){
-        console.log(err);
-        const from = ['addresses', 'checkout'].includes(req.body.from) ? req.body.from : '';
-        return res.render('address', { userId, from, items: checkoutItems, error: "Something went wrong, please try again" });
-    }
 }
 
 async function handleLogin(req, res){
@@ -92,6 +73,15 @@ async function handleLogin(req, res){
         res.render('login', {error : "Something went wrong"});
     }
 }
+
+function loggingOut(req, res){
+    res.clearCookie("uuid", { httpOnly: true });
+    return res.redirect('/amazon-clone/login');
+}
+
+
+
+// ==================== Forgot password flow (views: forgotPassword.ejs, verifyOtp.ejs, resetPassword.ejs) ====================
 
 async function handleForgotPassword(req, res){
     const email = (req.body.email || '').trim().toLowerCase();
@@ -237,6 +227,7 @@ async function handleVerifyOtp(req, res){
         return res.render('verifyOtp', { email, error: 'Something went wrong, please try again' });
     }
 }
+
 async function resetPassword(req, res){
     // 1. only allow users who passed the OTP step
     let data;
@@ -284,24 +275,52 @@ async function resetPassword(req, res){
 
 }
 
-function loggingOut(req, res){
-    res.clearCookie("uuid", { httpOnly: true });
-    return res.redirect('/amazon-clone/login');
+
+
+// ==================== Addresses (views: address.ejs, addressList.ejs) ====================
+
+async function enterAddress(req, res){
+    const { label, street, city , state, postalCode, country} = req.body;
+    const { userId } = req.params;
+    // checkout mode sends the selected cart item ids along; keep only valid-looking ids
+    const checkoutItems = (req.body.items || '').split(',').filter(id => /^[a-f0-9]{24}$/.test(id)).join(',');
+    try{
+        const loggedInUser = await user.findById(userId);
+        loggedInUser.addresses.push({label, street, city, state, postalCode, country});
+        await loggedInUser.save();
+        if(req.body.from === 'addresses'){
+            return res.redirect('/amazon-clone/addresses');
+        }
+        if(req.body.from === 'checkout' && checkoutItems){
+            return res.redirect(`/amazon-clone/checkout?items=${checkoutItems}`); // back to the same checkout
+        }
+        return res.redirect('/amazon-clone');
+    }catch(err){
+        console.log(err);
+        const from = ['addresses', 'checkout'].includes(req.body.from) ? req.body.from : '';
+        return res.render('address', { userId, from, items: checkoutItems, error: "Something went wrong, please try again" });
+    }
 }
 
-async function profilePage(req, res){
-    let userPayload = null;
-    let user = null;
+async function removeAddress(req, res){
+    const {addressId} = req.params;
     try{
-        userPayload = getUser(req.cookies.uuid);
+        const dbUser = await User.findById(req.user._id); // only ever the logged in user's own document
+        const address = dbUser && dbUser.addresses.id(addressId);
+        if(!address) return res.status(404).json({error : 'Address not found'});
+
+        address.deleteOne();
+        await dbUser.save();
+        return res.status(200).json({removed : true});
     }catch(err){
-        userPayload = null;
+        console.log(err);
+        return res.status(500).json({error : 'Some unexpected error occurred'});
     }
-    if(userPayload){
-        user = await User.findById(userPayload._id);
-    }
-    res.render('profile', {user : user});
 }
+
+
+
+// ==================== Home page (view: homePage.ejs) ====================
 
 async function homePage(req, res){
     try{
@@ -329,6 +348,60 @@ async function homePage(req, res){
     }
 }
 
+// Now since the listing only stores the reference id of the product in the form of string , so to fetch the actual product in items collection you need to write .populate , same logic for seller. From seller we fetch the storeName and rating , limit(20) caps the query to return only atmax 20 documents so that it does not causes delay in the system while fetching. We will pair it with .skip later and move to page 1, 2 etc
+
+
+
+// ==================== Profile (view: profile.ejs) ====================
+
+async function profilePage(req, res){
+    let userPayload = null;
+    let user = null;
+    try{
+        userPayload = getUser(req.cookies.uuid);
+    }catch(err){
+        userPayload = null;
+    }
+    if(userPayload){
+        user = await User.findById(userPayload._id);
+    }
+    res.render('profile', {user : user});
+}
+
+
+
+// ==================== Cart (view: cart.ejs; add to cart is also used on home, product and wishlist pages) ====================
+
+async function addToCart(req, res){
+    const {listingID} = req.body;
+    try{
+        const listing = await Listing.findById(listingID);
+        if(!listing || listing.status !== 'active' || listing.stock < 1){
+            return res.status(400).json({error : 'Item unavailable'});
+        }
+
+        const dbUser = await User.findById(req.user._id);
+        const existingProduct = dbUser.cart.find(item => item.listing.toString() === listingID);
+
+        if(existingProduct){
+            if(existingProduct.quantity >= listing.stock){
+                return res.status(400).json({error : 'Stock is finished'});
+            }
+
+            existingProduct.quantity += 1;
+        }else{
+            dbUser.cart.push({listing : listingID, quantity : 1});
+        }
+        await dbUser.save();
+        const quantity = existingProduct ? existingProduct.quantity : 1; // how many of this item are in the cart now
+        return res.json({cartCount : dbUser.cart.length, quantity});
+
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({error : 'Something went wrong'});
+    }
+}
+
 async function increaseQuantity(req, res){
     const {listingID} = req.body;
     try{
@@ -348,6 +421,7 @@ async function increaseQuantity(req, res){
     }
 
 }
+
 async function decreaseQuantity(req, res){
     const {listingID} = req.body;
     try{
@@ -385,6 +459,10 @@ async function removeItem(req, res){
         return res.status(500).json({message : 'some unexpected error occurred '});
     }
 }
+
+
+
+// ==================== Wishlist (view: wishlist.ejs; also the heart buttons on home and product pages) ====================
 
 async function addToWishlist(req, res){
     const {listingId} = req.body;
@@ -429,51 +507,8 @@ async function removeFromWishlist(req, res){
 }
 
 
-async function removeAddress(req, res){
-    const {addressId} = req.params;
-    try{
-        const dbUser = await User.findById(req.user._id); // only ever the logged in user's own document
-        const address = dbUser && dbUser.addresses.id(addressId);
-        if(!address) return res.status(404).json({error : 'Address not found'});
 
-        address.deleteOne();
-        await dbUser.save();
-        return res.status(200).json({removed : true});
-    }catch(err){
-        console.log(err);
-        return res.status(500).json({error : 'Some unexpected error occurred'});
-    }
-}
-
-async function addToCart(req, res){
-    const {listingID} = req.body;
-    try{
-        const listing = await Listing.findById(listingID);
-        if(!listing || listing.status !== 'active' || listing.stock < 1){
-            return res.status(400).json({error : 'Item unavailable'});
-        }
-
-        const dbUser = await User.findById(req.user._id);
-        const existingProduct = dbUser.cart.find(item => item.listing.toString() === listingID);
-
-        if(existingProduct){
-            if(existingProduct.quantity >= listing.stock){
-                return res.status(400).json({error : 'Stock is finished'});
-            }
-
-            existingProduct.quantity += 1;
-        }else{
-            dbUser.cart.push({listing : listingID, quantity : 1});
-        }
-        await dbUser.save();
-        const quantity = existingProduct ? existingProduct.quantity : 1; // how many of this item are in the cart now
-        return res.json({cartCount : dbUser.cart.length, quantity});
-
-    }catch(err){
-        console.log(err);
-        return res.status(500).json({error : 'Something went wrong'});
-    }
-}
+// ==================== Checkout (view: checkout.ejs) ====================
 
 async function placeOrder(req, res){
     // reserved = listings whose stock we already reduced, so we can give it back if something fails later
@@ -578,7 +613,7 @@ async function placeOrder(req, res){
     }
 }
 
-// Now since the listing only stores the reference id of the product in the form of string , so to fetch the actual product in items collection you need to write .populate , same logic for seller. From seller we fetch the storeName and rating , limit(20) caps the query to return only atmax 20 documents so that it does not causes delay in the system while fetching. We will pair it with .skip later and move to page 1, 2 etc
+
 
 module.exports = {
     placeOrder,
