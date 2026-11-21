@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const {requireLoginApi, restrictToLoggedInUser} = require('../middleware/auth');
+const {uploadProfilePhoto} = require('../middleware/upload');
 const {
     createUser,
     enterAddress,
@@ -17,7 +18,10 @@ const {
     resetPassword,
     handleVerifyOtp,
     handleResendOtp,
-    placeOrder
+    placeOrder,
+    startEmailChange,
+    verifyEmailChange,
+    updateProfile
 } = require('../controller/dynamicController');
 
 
@@ -55,11 +59,14 @@ router.patch('/cart/removeItem', requireLoginApi, removeItem);
 router.patch('/wishlist/add', requireLoginApi, addToWishlist);
 router.patch('/wishlist/remove' , requireLoginApi, removeFromWishlist);
 
+// ==================== Email Change ====================
 
+router.post('/profile/email/start', requireLoginApi, startEmailChange);
+router.patch('/profile', requireLoginApi, uploadProfilePhoto, updateProfile);
 
 // ==================== Checkout (view: checkout.ejs) ====================
 router.post('/placeOrder', restrictToLoggedInUser, placeOrder);
-
+router.patch('/profile/email/verify', requireLoginApi, verifyEmailChange);
 
 
 module.exports = router;

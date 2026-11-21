@@ -8,6 +8,7 @@ const Listing = require('../model/listing');
 const {getUser} = require('../services/auth');
 const User = require('../model/user');
 const Order = require('../model/order');
+const { error, log } = require('console');
 const MAX_ATTEMPTS = 5;
 const MIN_PASSWORD_LEN = 6;
 const BCRYPT_ROUNDS = 10;
@@ -368,7 +369,39 @@ async function profilePage(req, res){
     res.render('profile', {user : user});
 }
 
+// It is the last stop in the route requireLoginApi -> uploadProfilePhoto -> updateProfile . By the time it has run , multer already did its job , controller just reads what multer supplies to it. First it reads name and contact and then it checks for their validity . Then it finds the user with the id suplied in request , then it updates their name , contact and profile photo if it exists. Then it returns browser json message with new name , contact and profile photo for it to update.
+async function updateProfile(req, res){
+    const name = (req.body.name || '').trim();
+    const contact = (req.body.contact || '').trim();
+    if(!name){
+        return res.status(400).json({error : 'Please enter your name'});
+    }
+    if(!/^\d{10}$/.test(contact)){
+        return res.status(400).json({ error: 'Contact number must be 10 digits' });
+    }
 
+    try{
+        const dbUser = await User.findById(req.user._id);
+        if(!dbUser){
+            return res.status(401).json({error : 'Login required'});
+        }
+        dbUser.name = name;
+        dbUser.contact = contact;
+        if(req.file){
+            dbUser.profilePhoto = '/uploads/profile/' + req.file.filename ;
+        }
+        await dbUser.save();
+
+        return res.json({
+            name : dbUser.name,
+            contact : dbUser.contact,
+            profilePhoto : dbUser.profilePhoto
+        });
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({error : 'Could not save the details , please try again'})
+    }
+}
 
 // ==================== Cart (view: cart.ejs; add to cart is also used on home, product and wishlist pages) ====================
 
@@ -613,7 +646,125 @@ async function placeOrder(req, res){
     }
 }
 
+// ==================== Email Reset ====================
 
+async function issueEmailOtp(dbUser, sendTo, stage){
+    const otp = crypto.randomInt(100000, 1000000).toString();
+    dbUser.emailOtpHash = await bcrypt.hash(otp, BCRYPT_ROUNDS);
+    dbUser.emailOtpExpires = new Date(Date.now() + OTP_LIFETIME_MS);
+    dbUser.emailOtpAttempts = 0;
+    dbUser.emailOtpSentAt = new Date();
+    dbUser.emailChangeStage = stage;
+
+    await dbUser.save();
+    await sendOTP(sendTo, otp, OTP_LIFETIME_MS/60000, 'email change');
+}
+
+function clearEmailChange(dbUser){
+    dbUser.pendingEmail = null;
+    dbUser.emailChangeStage = null;
+    dbUser.emailOtpHash = null;
+    dbUser.emailOtpExpires = null;
+    dbUser.emailOtpAttempts = 0;
+}
+
+async function verifyEmailChange(req, res){
+    const otp = (req.body.otp || '').trim();
+    if(!/^\d{6}$/.test(otp)){
+        return res.status(400).json({ error: 'Please enter the 6-digit code' });
+    }
+
+    try{
+        const dbUser = await User.findById(req.user._id);
+        if(!dbUser){
+            return res.status(401).json({ error : 'Login Required'});
+        }
+
+        // is there a change in progress with a live code?
+        if(!dbUser.emailChangeStage || !dbUser.pendingEmail || !dbUser.emailOtpHash ||
+           !dbUser.emailOtpExpires || dbUser.emailOtpExpires < new Date()){
+            return res.status(400).json({ error: 'Code is invalid or has expired. Please start again.' });
+        }
+
+        // too many wrong tries -> cancel the whole change
+        if(dbUser.emailOtpAttempts >= MAX_ATTEMPTS){
+            clearEmailChange(dbUser);
+            await dbUser.save();
+            return res.status(400).json({ error: 'Too many attempts. Please start again.' });
+        }
+        
+        // counting wrong matches
+        const match = await bcrypt.compare(otp, dbUser.emailOtpHash);
+        if(!match){
+            dbUser.emailOtpAttempts += 1;
+            await dbUser.save();
+            return res.status(400).json({error : 'Wrong Code ', attemptsLeft : MAX_ATTEMPTS - dbUser.emailOtpAttempts})
+        }
+
+        // someone may have taken the new email while we were waiting
+        if(await User.exists({ email: dbUser.pendingEmail })){
+            clearEmailChange(dbUser);
+            await dbUser.save();
+            return res.status(400).json({ error: 'This email is already in use' });
+        }
+
+        // first code correct -> send the second code to the NEW email
+        if(dbUser.emailChangeStage === 'current'){
+            await issueEmailOtp(dbUser, dbUser.pendingEmail, 'new'); // also resets attempts and expiry
+            return res.json({ stage: 'new', sentTo: dbUser.pendingEmail });
+        }
+
+        //  second code correct -> swap the email for real
+        dbUser.email = dbUser.pendingEmail;
+        clearEmailChange(dbUser);
+        await dbUser.save();
+
+        //  the login cookie stores the email, so give them a fresh one
+        const loginToken = setUser(dbUser);
+        res.cookie('uuid', loginToken, { httpOnly: true });
+        return res.json({ stage: 'done', email: dbUser.email });
+    }catch(err){
+        console.log(err);
+        if(err.code === 11000){
+            return res.status(400).json({ error: 'This email is already in use' });
+        }
+        return res.status(500).json({ error: 'Could not verify the code, please try again' });
+    }
+}
+
+async function startEmailChange(req, res){
+    const newEmail = (req.body.newEmail || '').trim().toLowerCase();
+
+    // basic format check
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)){
+        return res.status(400).json({ error: 'Please enter a valid email' });
+    }
+    try{
+        const dbUser = await User.findById(req.user._id); // logged in user only, never from the URL
+        if(!dbUser) return res.status(401).json({ error: 'Login required' });
+
+        //  pointless or taken emails
+        if(newEmail === dbUser.email){
+            return res.status(400).json({ error: 'That is already your email' });
+        }
+        if(await User.exists({ email: newEmail })){
+            return res.status(400).json({ error: 'This email is already in use' });
+        }
+
+        // same 60 second cooldown as forgot password
+        if(dbUser.emailOtpSentAt && Date.now() - dbUser.emailOtpSentAt.getTime() < OTP_COOLDOWN_MS){
+            return res.status(429).json({ error: 'Please wait a minute before requesting another code' });
+        }
+
+        //  remember the new email, send code #1 to the CURRENT email
+        dbUser.pendingEmail = newEmail;
+        await issueEmailOtp(dbUser, dbUser.email, 'current');
+        return res.json({ stage: 'current', sentTo: dbUser.email });
+    }catch(err){
+        console.log(err);
+        return res.status(500).json({ error: 'Could not send the code, please try again' });
+    }
+}
 
 module.exports = {
     placeOrder,
@@ -633,5 +784,8 @@ module.exports = {
     handleForgotPassword,
     resetPassword,
     handleVerifyOtp,
-    handleResendOtp
+    handleResendOtp,
+    startEmailChange,
+    verifyEmailChange,
+    updateProfile
 }

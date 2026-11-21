@@ -23,7 +23,11 @@
     <!-- Left: Info card -->
     <div class="profile-card">
       <div class="profile-avatar">
-        <%= user.name ? user.name.charAt(0).toUpperCase() : "U" %>
+        <% if(user.profilePhoto){ %>
+              <img src="<%= user.profilePhoto %>" alt="<%= user.name %>'s profile photo">
+        <% }else{ %>
+          <%= user.name ? user.name.charAt(0).toUpperCase() : "U" %>
+          <% } %>
       </div>
 
       <h2 class="profile-name"><%= user.name %></h2>

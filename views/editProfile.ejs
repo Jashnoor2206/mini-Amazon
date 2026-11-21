@@ -48,18 +48,13 @@
 
       <div class="edit-column">
 
-        <!-- Personal details -->
+        <!-- Personal details (email has its own card below) -->
         <section class="edit-card">
           <h2 class="card-title">Personal details</h2>
-          <form action="/user/profile/edit" method="POST" enctype="multipart/form-data" id="profile-form" class="edit-form">
+          <form id="profile-form" class="edit-form">
             <div class="field">
               <label for="name">Full name</label>
               <input type="text" id="name" name="name" value="<%= user.name %>" required>
-            </div>
-
-            <div class="field">
-              <label for="email">Email</label>
-              <input type="email" id="email" name="email" value="<%= user.email %>" required>
             </div>
 
             <div class="field">
@@ -77,32 +72,54 @@
           </form>
         </section>
 
-        <!-- Change password -->
+        <!-- Email: changing it needs a code to the current email, then one to the new email -->
         <section class="edit-card">
-          <h2 class="card-title">Change password</h2>
-          <form action="/user/profile/password" method="POST" class="edit-form">
+          <h2 class="card-title">Email</h2>
+
+          <!-- state 1: current email + Change button -->
+          <div class="email-row" id="email-row">
+            <span class="email-current" id="email-current"><%= user.email %></span>
+            <button type="button" class="btn btn-ghost" id="email-change-btn">Change</button>
+          </div>
+
+          <!-- state 2: type the new email -->
+          <form id="email-start-form" class="edit-form" hidden>
             <div class="field">
-              <label for="currentPassword">Current password</label>
-              <input type="password" id="currentPassword" name="currentPassword" autocomplete="current-password" required>
+              <label for="newEmail">New email</label>
+              <input type="email" id="newEmail" name="newEmail" autocomplete="email" required>
             </div>
-
-            <div class="field-row">
-              <div class="field">
-                <label for="newPassword">New password</label>
-                <input type="password" id="newPassword" name="newPassword" minlength="6" autocomplete="new-password" required>
-              </div>
-              <div class="field">
-                <label for="confirmPassword">Confirm new password</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" minlength="6" autocomplete="new-password" required>
-              </div>
-            </div>
-            <p class="field-hint">Use at least 6 characters.</p>
-
+            <p class="field-hint">We'll send a code to your current email first, then one to the new email.</p>
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Update password</button>
+              <button type="button" class="btn btn-ghost email-cancel">Cancel</button>
+              <button type="submit" class="btn btn-primary">Send code</button>
+            </div>
+          </form>
+
+          <!-- state 3: type the 6-digit code (used for both codes) -->
+          <form id="email-verify-form" class="edit-form" hidden>
+            <p class="email-verify-hint" id="email-verify-hint">Enter the code we sent.</p>
+            <div class="field">
+              <label for="emailOtp">6-digit code</label>
+              <input type="text" id="emailOtp" name="otp" class="otp-input" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code" title="Enter the 6-digit code from your email" required>
+            </div>
+            <div class="form-actions">
+              <button type="button" class="btn btn-ghost email-cancel">Cancel</button>
+              <button type="submit" class="btn btn-primary">Verify</button>
             </div>
           </form>
         </section>
+
+        <!-- Password: reuses the forgot-password OTP flow, sent to the current email -->
+        <form action="/user/forgot-password" method="POST" class="password-link-form">
+          <input type="hidden" name="email" value="<%= user.email %>">
+          <button type="submit" class="edit-card link-card">
+            <span class="link-text">
+              <span class="link-title">Change password</span>
+              <span class="link-sub">We'll email a code to <%= user.email %></span>
+            </span>
+            <span class="link-arrow">›</span>
+          </button>
+        </form>
 
         <!-- Addresses -->
         <a href="/amazon-clone/addresses" class="edit-card link-card">
@@ -124,6 +141,7 @@
   </main>
 
   <script src="/js/toast.js"></script>
+  <script src="/js/editProfile.js"></script>
   <script>
     // live preview of the chosen photo before saving
     document.getElementById('profilePhoto').addEventListener('change', e => {

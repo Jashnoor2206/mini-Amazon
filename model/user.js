@@ -24,6 +24,10 @@ const  userSchema = new mongoose.Schema({
         minlength : 10,
         maxlength : 10
     },
+    profilePhoto : {
+        type : String,
+        default : ""
+    },
 
     // address 
     addresses: [
@@ -82,7 +86,13 @@ const  userSchema = new mongoose.Schema({
     resetOtpExpires:  { type: Date,    default: null },  // now + 10 minutes
     resetOtpAttempts: { type: Number,  default: 0 },     // wrong tries so far
     resetOtpSentAt:   { type: Date,    default: null },  // for the resend cooldown
-
+    pendingEmail: { type: String, default: null, trim: true, lowercase: true}, // the new email that we will recieve 
+    emailChangeStage: { type: String , enum : ['current', 'new', null], default : null},
+    // which email the live code was sent to
+    emailOtpHash : { type : String, default : null}, // bcrypt hash of the OTP
+    emailOtpExpires : { type : Date, default : null }, // now + 10 minutes
+    emailOtpAttempts : { type : Number, default : 0}, // wrong tries so far
+    emailOtpSentAt : { type : Date, default : null} // for resend cooldown
 }, {timestamps : true});
 
 
